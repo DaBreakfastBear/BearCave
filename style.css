@@ -1117,3 +1117,39 @@ body {
     color: var(--dark-blue);
 }
 .ach-card--unlocked .ach-status { color: #d9a800; }
+
+/* ===== Fertilizer "armed" state ===== */
+.buy-btn.armed {
+    background: #3b6e8f;
+    color: #fff;
+    box-shadow: 0 0 0 2px #ffd84d;
+}
+body.fert-armed .plot:not(.grown) { cursor: crosshair; }
+
+/* ===== Achievements tab bar ===== */
+.ach-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    max-width: 900px;
+    margin: 1.5rem auto 0;
+}
+.ach-tab {
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    font-family: inherit;
+    background: rgba(27, 73, 101, 0.08);
+    color: var(--dark-blue);
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.ach-tab:hover { background: rgba(27, 73, 101, 0.16); }
+.ach-tab--active {
+    background: var(--dark-blue);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(27, 73, 101, 0.35);
+}

@@ -42,7 +42,7 @@
             </figure>
             <figure class="nursery-card">
                 <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Fertilizer">
-                <figcaption>fertilizer</figcaption>
+                <figcaption><span class="nursery-amount" data-fert-display>0</span></figcaption>
             </figure>
             <figure class="nursery-card">
                 <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Pest control">
@@ -88,6 +88,18 @@
                 <p class="shop-cost">100 coins each</p>
                 <p class="shop-stock">you have: <span data-pest-display>0</span></p>
                 <button type="button" id="buy-pest-btn" class="buy-btn">buy 1 pest control</button>
+            </div>
+        </div>
+
+        <!-- Fertilizer — instantly finishes a growing plant (1 per use) -->
+        <div class="water-card" id="fert-card">
+            <span class="water-icon" aria-hidden="true">🪴</span>
+            <div class="water-card__body">
+                <h3>fertilizer</h3>
+                <p class="shop-cost">50 coins each</p>
+                <p class="shop-stock">you have: <span data-fert-display>0</span></p>
+                <button type="button" id="buy-fert-btn" class="buy-btn">buy 1 fertilizer</button>
+                <button type="button" id="use-fert-btn" class="buy-btn">use fertilizer on a plant</button>
             </div>
         </div>
     </section>
@@ -270,6 +282,62 @@
             renderPestControl();
             refreshAllStates();
         });
+
+        // ===== Fertilizer — buy 1 for 50 coins, then "use" on a plant =====
+        const buyFertBtn = document.getElementById('buy-fert-btn');
+        const useFertBtn = document.getElementById('use-fert-btn');
+        const FERT_PRICE = 50;
+        let fertArmed = false;
+
+        function renderFertilizer() {
+            const n = getFertilizer();
+            document.querySelectorAll('[data-fert-display]').forEach(el => { el.textContent = n; });
+        }
+        function updateFertBuyState() {
+            if (coins < FERT_PRICE) {
+                buyFertBtn.disabled = true;
+                buyFertBtn.textContent = 'need ' + coinText(FERT_PRICE);
+            } else {
+                buyFertBtn.disabled = false;
+                buyFertBtn.textContent = 'buy 1 fertilizer';
+            }
+        }
+        function armFert(on) {
+            fertArmed = on;
+            useFertBtn.classList.toggle('armed', on);
+            useFertBtn.textContent = on ? 'armed — click a growing plant' : 'use fertilizer on a plant';
+            document.body.classList.toggle('fert-armed', on);
+        }
+        buyFertBtn.addEventListener('click', () => {
+            if (coins < FERT_PRICE) return;
+            coins -= FERT_PRICE;
+            addFertilizer(1);
+            renderCoins();
+            renderFertilizer();
+            refreshAllStates();
+        });
+        useFertBtn.addEventListener('click', () => { armFert(!fertArmed); });
+
+        // Apply fertilizer to a plot: instantly finish growing it.
+        function applyFertilizer(plot) {
+            const idx = plot.dataset.index;
+            const state = plotState[idx];
+            armFert(false);
+            if (!state) return;
+            if (plot.classList.contains('grown')) { flashPlot(plot, 'already grown!'); return; }
+            const have = getFertilizer();
+            if (have < 1) { flashPlot(plot, '🪴 need fertilizer!'); return; }
+            setFertilizer(have - 1);
+            addFertUsed(1);
+            state.lastTouched = Date.now();
+            state.plantedAt = Date.now() - state.growMs - 1;   // fully grown now
+            state.pauseMs = null;
+            state.watered = true;
+            savePlots();
+            renderFertilizer();
+            updatePlot(plot);
+            refreshAllStates();
+        }
 
         // ===== INVENTORY (persisted) =====
         const INV_KEY  = 'bearcave_inventory';
@@ -476,6 +544,7 @@
             }
             setWater(have - need);
             renderWater();
+            addWatered(1);                   // lifetime waterings (for achievements)
             state.watered = true;             // resume the final stretch, don't re-pause
             state.lastTouched = Date.now();   // watering counts as touching the plant
             // Resume: shift plantedAt so the timer continues from 3 sec.
@@ -653,6 +722,7 @@
             }
             setPestControl(have - 1);
             renderPestControl();
+            addAntsCleared(1);               // lifetime ants cleared (for achievements)
             state.ants = false;
             state.antsArrivedAt = null;
             state.lastTouched = Date.now();
@@ -715,6 +785,10 @@
                     clearAntsWithPest(plot);             // ants -> need pest control to clear
                     return;
                 }
+                if (fertArmed) {
+                    applyFertilizer(plot);                // fertilizer -> instantly finish
+                    return;
+                }
                 state.lastTouched = Date.now();             // a touch resets the ant timer
                 savePlots();
                 if (plot.classList.contains('grown')) {
@@ -760,8 +834,10 @@
             }
         }
         sellAllBtn.addEventListener('click', () => {
-            if (totalHarvestCount() === 0) return;
+            const sold = totalHarvestCount();
+            if (sold === 0) return;
             coins += totalHarvestValue();
+            addSold(sold);                  // lifetime crops sold (for achievements)
             harvested = {};
             saveHarvested();
             renderCoins();
@@ -798,6 +874,7 @@
             document.querySelectorAll('#shop-grid .shop-card').forEach(updateCardState);
             updateWaterBuyState();
             updatePestBuyState();
+            updateFertBuyState();
             refreshSellAllBtn();
         }
 
@@ -805,6 +882,7 @@
         renderCoins();
         renderWater();
         renderPestControl();
+        renderFertilizer();
         renderInventory();
         renderMarket();
         plotGrid.querySelectorAll('.plot').forEach(updatePlot);  // restore plots

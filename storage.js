@@ -67,6 +67,45 @@ function addPlanted(type, n = 1) {
     return o[type];
 }
 
+// --- Watering actions (lifetime, wiped on reset) ---
+const WATERED_KEY = 'bearcave_watered';
+function getWateredCount() { return loadJSON(WATERED_KEY, 0) || 0; }
+function addWatered(n = 1) { saveJSON(WATERED_KEY, getWateredCount() + n); }
+
+// --- Fertilizer (owned units + lifetime uses) ---
+const FERT_KEY = 'bearcave_fert';
+const FERT_USED_KEY = 'bearcave_fert_used';
+function getFertilizer() {
+    const n = parseInt(localStorage.getItem(FERT_KEY), 10);
+    return isNaN(n) ? 0 : n;
+}
+function setFertilizer(n) { localStorage.setItem(FERT_KEY, String(Math.max(0, Math.floor(n)))); }
+function addFertilizer(n = 1) { setFertilizer(getFertilizer() + n); }
+function getFertUsed() { return loadJSON(FERT_USED_KEY, 0) || 0; }
+function addFertUsed(n = 1) { saveJSON(FERT_USED_KEY, getFertUsed() + n); }
+
+// --- Crops sold (lifetime) ---
+const SOLD_KEY = 'bearcave_sold';
+function getSoldCount() { return loadJSON(SOLD_KEY, 0) || 0; }
+function addSold(n = 1) { saveJSON(SOLD_KEY, getSoldCount() + n); }
+
+// --- Ants cleared (lifetime) ---
+const ANTS_CLEARED_KEY = 'bearcave_ants_cleared';
+function getAntsCleared() { return loadJSON(ANTS_CLEARED_KEY, 0) || 0; }
+function addAntsCleared(n = 1) { saveJSON(ANTS_CLEARED_KEY, getAntsCleared() + n); }
+
+// --- Lifetime meta-stats (SURVIVE a reset, e.g. total reset count) ---
+// Kept under a non-bearcave_ key so the reset sparkle doesn't wipe them.
+const LIFETIME_KEY = 'bc_lifetime';
+function getLifetime() { return loadJSON(LIFETIME_KEY, {}); }
+function saveLifetime(o) { saveJSON(LIFETIME_KEY, o); }
+function getResets() { return getLifetime().resets || 0; }
+function addReset() {
+    const o = getLifetime();
+    o.resets = (o.resets || 0) + 1;
+    saveLifetime(o);
+}
+
 // --- Helper: refresh every #coin-balance on the page ---
 function renderCoinBalance() {
     const el = document.getElementById('coin-balance');
@@ -98,6 +137,7 @@ function renderPestControl() {
 //  everything, then reloads.
 // ====================================================================
 function resetEverything() {
+    addReset();  // lifetime meta: count this reset (survives the wipe below)
     Object.keys(localStorage)
         .filter(k => k.indexOf('bearcave_') === 0)
         .forEach(k => localStorage.removeItem(k));
