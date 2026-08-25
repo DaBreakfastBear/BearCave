@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Cave</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">1</span>
+    </div>
+
+    <header class="site-header">
+        <h1 class="title">BEAR CAVE</h1>
+
+        <!-- Grid of navigation cards -->
+        <nav class="home-grid">
+            <a href="plant.html" class="home-card" aria-label="Visit the nursery">
+                <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="The Nursery">
+                <span class="home-card__label">the nursery</span>
+            </a>
+            <a href="blogs.html" class="home-card" aria-label="Read the blogs">
+                <img src="Untitled design.png" alt="Blogs">
+                <span class="home-card__label">blogs</span>
+            </a>
+            <a href="achievements.html" class="home-card" aria-label="View achievements">
+                <img src="Screenshot 2025-09-26 at 5.04.53 PM.png" alt="Achievements">
+                <span class="home-card__label">achievements</span>
+            </a>
+        </nav>
+    </header>
+
+    <script src="storage.js"></script>
+    <script>renderCoinBalance();</script>
+</body>
+</html>

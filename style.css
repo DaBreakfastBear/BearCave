@@ -1,0 +1,1119 @@
+:root {
+    --light-blue: #cfe8ff;
+    --dark-blue: #1b4965;
+    --black: #000000;
+    --white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: "Lexend", sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--light-blue);
+    color: var(--dark-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.site-header {
+    text-align: center;
+    padding: 2rem;
+}
+
+.title {
+    font-family: "Lexend", sans-serif;
+    font-weight: 900;
+    font-size: clamp(3rem, 12vw, 10rem);
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+/* Corner logo: clickable image with black circle outline and a white dot under it */
+.corner-logo {
+    position: fixed;
+    top: 1.25rem;
+    left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    z-index: 10;
+}
+
+.corner-logo__circle {
+    display: block;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 5px solid var(--black);
+    overflow: hidden;
+    background-color: var(--white);
+    transition: transform 0.15s ease;
+}
+
+.corner-logo__circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.corner-logo:hover .corner-logo__circle {
+    transform: scale(1.05);
+}
+
+.corner-logo__dot {
+    margin-top: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--white);
+    border: 2px solid var(--black);
+}
+
+/* Clickable screenshot card linking to plant.html */
+.plant-link {
+    display: block;
+    margin: 2rem auto 0;
+    max-width: 320px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plant-link img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.plant-link:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(27, 73, 101, 0.35);
+}
+
+/* ===== The Nursery page ===== */
+
+.nursery-body {
+    overflow-x: hidden;
+    display: block;            /* override centered flex so tall content scrolls */
+    align-items: initial;
+    justify-content: initial;
+    padding: 2rem 1rem 4rem;
+}
+
+.nursery-header {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-top: 6rem;         /* clear the fixed corner logo */
+}
+
+.nursery-header .title {
+    font-size: clamp(2.5rem, 10vw, 8rem);
+}
+
+.nursery-welcome {
+    margin-top: 1rem;
+    font-size: clamp(0.9rem, 2vw, 1.25rem);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    color: var(--dark-blue);
+    opacity: 0.85;
+}
+
+/* Row of three labeled screenshots */
+.nursery-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    margin: 2.5rem auto 0;
+    max-width: 900px;
+}
+
+.nursery-card {
+    flex: 1 1 240px;
+    max-width: 280px;
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    text-align: center;
+    position: relative;
+}
+
+.nursery-card img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+/* Live supply readout in the caption (water gallons / pest count),
+   replacing the old blue label text. */
+.nursery-amount {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--dark-blue);
+}
+.nursery-unit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark-blue);
+    margin-left: 0.2rem;
+    opacity: 0.75;
+}
+
+.nursery-card figcaption {
+    padding: 0.6rem 0.5rem 0.8rem;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--dark-blue);
+}
+
+/* 2x3 grid of plantable plots */
+.nursery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 2.5rem auto 0;
+    max-width: 900px;
+}
+
+.plot {
+    position: relative;
+    padding: 0;
+    border: 3px solid var(--dark-blue);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--white);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plot:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(27, 73, 101, 0.3);
+}
+
+.plot img {
+    display: block;
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+.plot-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.25rem 0.4rem;
+    background: rgba(27, 73, 101, 0.85);
+    color: var(--white);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    min-height: 1.6em;
+}
+
+.plot.growing { border-color: #5aa9e6; }
+.plot.grown   { border-color: #8aa884; }
+.plot.grown .plot-overlay { background: rgba(138, 168, 132, 0.9); }
+
+/* Plot waiting to be watered */
+.plot.needs-water {
+    border-color: #3aa3d0;
+    animation: water-pulse 1.2s ease-in-out infinite;
+}
+.plot.needs-water .plot-overlay {
+    background: rgba(58, 163, 208, 0.9);
+    color: var(--white);
+}
+@keyframes water-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(58, 163, 208, 0.5); }
+    50%      { box-shadow: 0 0 0 6px rgba(58, 163, 208, 0); }
+}
+
+/* Shake when you try to water without enough water */
+.plot.shake { animation: plot-shake 0.4s ease; }
+@keyframes plot-shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-5px); }
+    75%      { transform: translateX(5px); }
+}
+
+/* ===== Ants ===== */
+.ant {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #111;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 40;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.plot.ants .plot-overlay {
+    background: rgba(60, 60, 60, 0.85);
+    color: var(--white);
+}
+
+/* The ants' nest: a black dot (like a period) at the end of "THE NURSERY" */
+#ants-origin {
+    display: inline-block;
+    width: 0.2em;
+    height: 0.2em;
+    border-radius: 50%;
+    background: #111;
+    vertical-align: middle;
+    margin-left: 0.06em;
+}
+
+@media (max-width: 700px) {
+    .nursery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== Coins bar (fixed up top) ===== */
+.coins-bar {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 12;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--white);
+    border: 3px solid var(--black);
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(27, 73, 101, 0.25);
+    font-weight: 600;
+    color: var(--dark-blue);
+}
+
+.coins-coin {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #f4c542;
+    border: 2px solid #b8860b;
+    display: inline-block;
+}
+
+.coins-label {
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+}
+
+.coins-amount {
+    font-size: 1.1rem;
+    font-weight: 800;
+    min-width: 1ch;
+    text-align: right;
+}
+
+/* Divider between coins & water in the top bar */
+.bar-divider {
+    width: 2px;
+    height: 1.1rem;
+    background: rgba(27, 73, 101, 0.25);
+    border-radius: 2px;
+    margin: 0 0.35rem;
+}
+
+.water-drop {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* ===== THE SHOP ===== */
+.shop-section {
+    max-width: 1100px;
+    margin: 4rem auto 0;
+    padding: 2rem 1rem 4rem;
+    text-align: center;
+}
+
+.shop-title {
+    font-family: "Lexend", sans-serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 8vw, 6rem);
+    letter-spacing: 0.05em;
+    color: var(--dark-blue);
+    line-height: 1;
+}
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem auto 0;
+    max-width: 900px;
+}
+
+.shop-card, .market-card, .upgrade-card {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    padding: 1rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.shop-card:hover, .market-card:hover, .upgrade-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(27, 73, 101, 0.35);
+}
+
+.shop-card img, .market-card img, .upgrade-card img {
+    display: block;
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.shop-card h3, .market-card h3, .upgrade-card h3 {
+    margin-top: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--dark-blue);
+}
+
+.shop-cost {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    color: var(--dark-blue);
+    opacity: 0.8;
+}
+
+.shop-stock {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dark-blue);
+}
+
+.stock-count {
+    font-weight: 800;
+}
+
+.buy-btn {
+    margin-top: 0.75rem;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--dark-blue);
+    color: var(--white);
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.buy-btn:hover:not(:disabled) {
+    background: #143a52;
+}
+
+.buy-btn:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.buy-btn:disabled {
+    background: #9bb3c4;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.sold-out {
+    opacity: 0.55;
+}
+
+.too-poor .buy-btn {
+    background: #c9a23a;
+}
+
+/* ===== Water buy card ===== */
+.water-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 900px;
+    margin: 1.5rem auto 0;
+    padding: 1rem 1.25rem;
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+}
+
+.water-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.water-card__body {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+}
+
+.water-card__body h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--dark-blue);
+}
+
+.water-card__body .buy-btn {
+    margin-top: 0;
+    width: auto;
+    min-width: 140px;
+}
+
+/* Shop refresh countdown */
+.shop-refresh {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--dark-blue);
+    opacity: 0.75;
+}
+
+#refresh-timer {
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===== INVENTORY ===== */
+.inventory-section {
+    max-width: 1100px;
+    margin: 3rem auto 0;
+    padding: 2rem 1rem 4rem;
+    text-align: center;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem auto 0;
+    max-width: 900px;
+}
+
+.inventory-empty {
+    grid-column: 1 / -1;
+    font-size: 1rem;
+    color: var(--dark-blue);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.inv-card {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    padding: 1rem;
+    position: relative;
+    animation: inv-pop 0.25s ease;
+}
+
+@keyframes inv-pop {
+    0%   { transform: scale(0.6); opacity: 0; }
+    60%  { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+.inv-card img {
+    display: block;
+    width: 100%;
+    height: 160px;
+    object-fit: contain;
+    background: var(--light-blue);
+    border-radius: 12px;
+}
+
+.inv-name {
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dark-blue);
+}
+
+.inv-count {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    background: var(--dark-blue);
+    color: var(--white);
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+}
+
+/* per-type accent borders (swap images later, keep the color cues) */
+.inv-card--potato       { border-top: 5px solid #f4c542; }   /* yellow seed */
+.inv-card--carrot      { border-top: 5px solid #f49d3a; }   /* orange seed */
+.inv-card--radish      { border-top: 5px solid #e05a4f; }   /* red seed */
+.inv-card--cabbage     { border-top: 5px solid #8aa884; }   /* green seed */
+.inv-card--cauliflower { border-top: 5px solid #b8c6d4; }   /* white seed */
+
+/* ===== Seed picker modal ===== */
+.picker-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+}
+
+.picker-modal.open { display: flex; }
+
+.picker-card {
+    background: var(--light-blue);
+    border: 3px solid var(--dark-blue);
+    border-radius: 18px;
+    padding: 1.5rem;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.picker-card h3 {
+    color: var(--dark-blue);
+    font-size: 1.4rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+}
+
+.picker-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.picker-option {
+    background: var(--white);
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+
+.picker-option:hover { transform: translateY(-3px); }
+
+.picker-option img {
+    display: block;
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.picker-name {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark-blue);
+}
+
+.picker-name small {
+    opacity: 0.7;
+    font-weight: 500;
+}
+
+.picker-cancel {
+    border: 2px solid var(--dark-blue);
+    background: transparent;
+    color: var(--dark-blue);
+    border-radius: 999px;
+    padding: 0.5rem 1.5rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.picker-cancel:hover { background: var(--dark-blue); color: var(--white); }
+
+/* Vertical columns of falling glowing dots on the left & right edges */
+.snow-column {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 14vw;
+    max-width: 180px;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.snow-column--left { left: 0; }
+.snow-column--right { right: 0; }
+
+.snow-dot {
+    position: absolute;
+    top: -20px;
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.9),
+                0 0 14px 4px rgba(255, 255, 255, 0.5);
+    animation-name: snow-fall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform, top;
+}
+
+@keyframes snow-fall {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0;
+    }
+    10% { opacity: 1; }
+    50% {
+        transform: translate(var(--drift), 50vh);
+    }
+    90% { opacity: 1; }
+    100% {
+        transform: translate(calc(var(--drift) * -1), 105vh);
+        opacity: 0;
+    }
+}
+
+/* ===== BOOK OF KNOWLEDGE ===== */
+.book-section {
+    max-width: 1100px;
+    margin: 3rem auto 0;
+    padding: 2rem 1rem 4rem;
+    text-align: center;
+}
+
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem auto 0;
+    max-width: 1100px;
+}
+
+.book-card {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    padding: 1rem;
+    text-align: left;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(27, 73, 101, 0.35);
+}
+
+.book-card img {
+    display: block;
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+    background: var(--light-blue);
+    border-radius: 12px;
+}
+
+.book-card h3 {
+    margin-top: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--dark-blue);
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.book-facts {
+    list-style: none;
+    margin-top: 0.75rem;
+}
+
+.book-facts li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.4rem 0.25rem;
+    border-bottom: 1px dashed rgba(27, 73, 101, 0.18);
+    font-size: 0.95rem;
+    color: var(--dark-blue);
+}
+
+.book-facts li:last-child { border-bottom: none; }
+
+.book-facts li span {
+    opacity: 0.7;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.book-facts li b {
+    font-weight: 700;
+    text-align: right;
+    text-transform: capitalize;
+}
+
+@media (max-width: 700px) {
+    .book-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== Sell all button (Farmers Market) ===== */
+.sell-all-btn {
+    display: block;
+    margin: 1.25rem auto 0;
+    padding: 0.7rem 2rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--dark-blue);
+    color: var(--white);
+    font-family: inherit;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.sell-all-btn:hover:not(:disabled) { background: #143a52; }
+.sell-all-btn:active:not(:disabled) { transform: scale(0.97); }
+.sell-all-btn:disabled { background: #9bb3c4; cursor: not-allowed; opacity: 0.7; }
+
+/* ===== Upgrade card description ===== */
+.upgrade-desc {
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.3;
+    color: var(--dark-blue);
+    opacity: 0.8;
+}
+
+/* ===== Book of Knowledge (locked state) ===== */
+.book-locked {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2rem auto;
+    max-width: 440px;
+    padding: 2rem 1.5rem;
+    background: var(--white);
+    border: 3px dashed rgba(27, 73, 101, 0.4);
+    border-radius: 18px;
+}
+
+.book-lock {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.book-locked p {
+    text-align: center;
+    color: var(--dark-blue);
+    opacity: 0.85;
+    font-size: 1rem;
+}
+
+.book-locked b { font-weight: 800; }
+
+.book-section.unlocked .book-locked { display: none; }
+
+/* ===== Home navigation grid ===== */
+.home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin: 2.5rem auto 0;
+    max-width: 760px;
+}
+
+.home-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--dark-blue);
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(27, 73, 101, 0.35);
+}
+
+.home-card img {
+    display: block;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.home-card__label {
+    padding: 0.9rem 0.5rem;
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+}
+
+/* ===== Back link ===== */
+.back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: var(--dark-blue);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+}
+.back-link:hover { opacity: 1; text-decoration: underline; }
+
+/* ===== Blogs grid ===== */
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin: 2.5rem auto 0;
+    max-width: 1100px;
+}
+
+.blog-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--dark-blue);
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.blog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(27, 73, 101, 0.35);
+}
+
+.blog-card img {
+    display: block;
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+}
+
+.blog-card__body {
+    padding: 1rem;
+    text-align: left;
+}
+
+.blog-card__body h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.blog-card__body p {
+    margin-top: 0.4rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    opacity: 0.8;
+}
+
+.blog-card__tag {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    background: var(--dark-blue);
+    color: var(--white);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.blog-card__tag--soon { background: #9bb3c4; }
+.blog-card__tag--owned { background: #8aa884; }
+
+.blog-card--soon { opacity: 0.65; cursor: default; }
+.blog-card--soon:hover { transform: none; box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25); }
+
+@media (max-width: 700px) {
+    .blog-grid, .home-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== Paywall (Book of Knowledge) ===== */
+.paywall {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 2.5rem auto;
+    max-width: 460px;
+    padding: 2.5rem 1.5rem;
+    background: var(--white);
+    border: 3px dashed rgba(27, 73, 101, 0.4);
+    border-radius: 18px;
+    text-align: center;
+}
+
+.paywall h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: var(--dark-blue);
+}
+
+.paywall p {
+    color: var(--dark-blue);
+    opacity: 0.85;
+    line-height: 1.4;
+    max-width: 360px;
+}
+
+.paywall b { font-weight: 800; }
+
+.pay-note {
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.75;
+}
+/* ===== Reset sparkle (bottom-right corner, on every page) ===== */
+#reset-sparkle {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #ffd84d;
+    font-size: 17px;
+    line-height: 26px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0.5;
+    z-index: 60;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    -webkit-text-stroke: 0;
+}
+#reset-sparkle:hover { opacity: 1; transform: scale(1.18); }
+
+/* ===== Achievements page ===== */
+.ach-summary {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--dark-blue);
+    opacity: 0.85;
+    margin: 0.4rem 0 0;
+}
+
+.ach-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    max-width: 900px;
+    margin: 2rem auto 0;
+}
+
+.ach-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    background: var(--white);
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    box-shadow: 0 4px 14px rgba(27, 73, 101, 0.18);
+    border: 2px solid transparent;
+}
+
+.ach-card--unlocked {
+    border-color: #ffd84d;
+    background: linear-gradient(180deg, #fffdf2, var(--white));
+}
+
+.ach-card--locked {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+}
+
+.ach-icon {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(27, 73, 101, 0.08);
+}
+.ach-icon img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.ach-body { flex: 1 1 auto; min-width: 0; }
+.ach-body h3 {
+    margin: 0 0 0.15rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dark-blue);
+}
+.ach-body p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.25;
+    color: var(--dark-blue);
+    opacity: 0.7;
+}
+.ach-progress {
+    margin-top: 0.2rem !important;
+    font-weight: 700;
+    opacity: 0.85 !important;
+}
+
+.ach-status {
+    flex: 0 0 auto;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--dark-blue);
+}
+.ach-card--unlocked .ach-status { color: #d9a800; }

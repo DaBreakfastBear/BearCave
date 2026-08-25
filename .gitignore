@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+._*
+
+# iCloud / cloud sync metadata
+*.icloud
+.iCloud/*
+
+# Editor / OS junk
+Thumbs.db
+*.swp
+*~

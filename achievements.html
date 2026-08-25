@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Cave · Achievements</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="nursery-body">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">1</span>
+    </div>
+
+    <header class="site-header nursery-header">
+        <h1 class="title">ACHIEVEMENTS</h1>
+        <p class="nursery-welcome">milestones from your bear cave journey.</p>
+        <p class="ach-summary" id="ach-summary"></p>
+
+        <div class="ach-grid" id="ach-grid"></div>
+    </header>
+
+    <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script>
+        renderCoinBalance();
+
+        // =====================================================================
+        //  EDIT YOUR ACHIEVEMENT WORDING HERE  ✏️
+        //  Each crop has 4 tiers: 1, 5, 20, 100.
+        //  Just change the text inside the quotes — that's it!
+        //    title = the big bold name on the card
+        //    desc  = the small line under it
+        // =====================================================================
+        const WORDING = {
+            potato: {
+                1:   { title: 'first potato',                      desc: 'plant your first potato.' },
+                5:   { title: 'potatopotatopotatopotatopotato',      desc: 'plant 5 potatoes.' },
+                20:  { title: 'potato x20',                          desc: 'plant 20 potatoes.' },
+                100: { title: 'potato x100',                         desc: 'plant 100 potatoes.' }
+            },
+            carrot: {
+                1:   { title: 'first carrot',                       desc: 'plant your first carrot.' },
+                5:   { title: 'carrot ^ 5',                           desc: 'plant 5 carrots.' },
+                20:  { title: 'happy Peachy',                          desc: 'plant 20 carrots.' },
+                100: { title: 'dreaming Peachy',                         desc: 'plant 100 carrots.' }
+            },
+            radish: {
+                1:   { title: 'first radish',                       desc: 'plant your first radish.' },
+                5:   { title: 'radish x5',                           desc: 'plant 5 radishes.' },
+                20:  { title: 'radish x20',                          desc: 'plant 20 radishes.' },
+                100: { title: 'radish x100',                         desc: 'plant 100 radishes.' }
+            },
+            cabbage: {
+                1:   { title: 'first cabbage',                      desc: 'plant your first cabbage.' },
+                5:   { title: 'cabbage x5',                          desc: 'plant 5 cabbages.' },
+                20:  { title: 'cabbage x20',                         desc: 'plant 20 cabbages.' },
+                100: { title: 'gonna be a stinky night',                        desc: 'plant 100 cabbages.' }
+            },
+            cauliflower: {
+                1:   { title: 'first cauliflower',                   desc: 'plant your first cauliflower.' },
+                5:   { title: '5 white heads',                     desc: 'plant 5 cauliflowers.' },
+                20:  { title: 'leaf flowers',                    desc: 'plant 20 cauliflowers.' },
+                100: { title: 'cauliflower^100',                   desc: 'plant 100 cauliflowers.' }
+            }
+        };
+
+        const TIERS = [1, 5, 20, 100];   // the goal number for each row
+
+        const grid = document.getElementById('ach-grid');
+        let unlocked = 0, total = 0;
+
+        SEED_KEYS.forEach(key => {
+            const count = plantedCount(key);
+            const img = SEEDS[key].img;
+            TIERS.forEach(n => {
+                total++;
+                const w = WORDING[key][n];
+                const ok = count >= n;
+                if (ok) unlocked++;
+                const card = document.createElement('article');
+                card.className = 'ach-card ' + (ok ? 'ach-card--unlocked' : 'ach-card--locked');
+                card.innerHTML =
+                    '<div class="ach-icon"><img src="' + img + '" alt="' + SEEDS[key].name + '"></div>' +
+                    '<div class="ach-body">' +
+                        '<h3>' + w.title + '</h3>' +
+                        '<p>' + w.desc + '</p>' +
+                        '<p class="ach-progress">' + Math.min(count, n) + ' / ' + n + '</p>' +
+                    '</div>' +
+                    '<span class="ach-status">' + (ok ? '✓' : '🔒') + '</span>';
+                grid.appendChild(card);
+            });
+        });
+
+        document.getElementById('ach-summary').textContent =
+            unlocked + ' / ' + total + ' unlocked';
+    </script>
+</body>
+</html>

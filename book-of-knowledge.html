@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Cave · Book of Knowledge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="nursery-body">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">1</span>
+    </div>
+
+    <header class="site-header nursery-header">
+        <a href="blogs.html" class="back-link">← back to blogs</a>
+        <h1 class="title" style="font-size:clamp(2rem,8vw,5rem)">BOOK OF KNOWLEDGE</h1>
+        <p class="nursery-welcome">everything you need to know about every seed.</p>
+    </header>
+
+    <!-- ===== Paywall (shown until unlocked) ===== -->
+    <section class="book-section" id="paywall">
+        <div class="paywall">
+            <span class="book-lock" aria-hidden="true">🔒</span>
+            <h2>unlock the Book of Knowledge</h2>
+            <p>pay <b>10 coins</b> to unlock this guide forever — it covers every seed's cost, sell price, growth time &amp; water needs.</p>
+            <button type="button" id="pay-btn" class="sell-all-btn">unlock for 10 coins</button>
+            <p id="pay-note" class="pay-note"></p>
+        </div>
+    </section>
+
+    <!-- ===== The actual guide (revealed after paying) ===== -->
+    <section class="book-section" id="book-section" hidden>
+        <div id="book-grid" class="book-grid">
+            <!-- book cards are generated from the SEEDS config in JS -->
+        </div>
+    </section>
+
+    <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script>
+        renderCoinBalance();
+
+        const paywall   = document.getElementById('paywall');
+        const bookSec   = document.getElementById('book-section');
+        const bookGrid  = document.getElementById('book-grid');
+        const payBtn    = document.getElementById('pay-btn');
+        const payNote   = document.getElementById('pay-note');
+        const UNLOCK_COST = 10;
+
+        function showBook() {
+            paywall.hidden = true;
+            bookSec.hidden = false;
+            bookGrid.innerHTML = SEED_KEYS.map(bookCardHTML).join('');
+        }
+
+        function updatePaywall() {
+            const coins = getCoins();
+            if (coins >= UNLOCK_COST) {
+                payBtn.disabled = false;
+                payBtn.textContent = `unlock for ${coinText(UNLOCK_COST)}`;
+                payNote.textContent = `you have ${coinText(coins)}.`;
+            } else {
+                payBtn.disabled = true;
+                payBtn.textContent = `unlock for ${coinText(UNLOCK_COST)}`;
+                const need = UNLOCK_COST - coins;
+                payNote.textContent = `you have ${coinText(coins)} — earn ${coinText(need)} more to unlock.`;
+            }
+        }
+
+        payBtn.addEventListener('click', () => {
+            if (getCoins() < UNLOCK_COST) return;
+            spendCoins(UNLOCK_COST);   // deduct 10 (persisted website-wide)
+            unlockBook();               // remember it's unlocked forever
+            renderCoinBalance();        // refresh the top coin bar
+            showBook();
+        });
+
+        // On load: if already unlocked, skip the paywall entirely.
+        if (isBookUnlocked()) {
+            showBook();
+        } else {
+            updatePaywall();
+        }
+    </script>
+</body>
+</html>

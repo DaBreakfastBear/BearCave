@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Cave · Blogs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="nursery-body">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">1</span>
+    </div>
+
+    <header class="site-header nursery-header">
+        <h1 class="title">BLOGS</h1>
+        <p class="nursery-welcome">stories, guides &amp; notes from the cave.</p>
+
+        <div class="blog-grid" id="blog-grid">
+            <!-- The Book of Knowledge — costs 10 coins to unlock -->
+            <a href="book-of-knowledge.html" class="blog-card" id="blog-book">
+                <img src="Untitled design.png" alt="Book of Knowledge">
+                <div class="blog-card__body">
+                    <h3>Book of Knowledge</h3>
+                    <p>A handy guide to every seed — cost, sell price, growth time &amp; water.</p>
+                    <span class="blog-card__tag" id="blog-book-tag">10 coins to unlock</span>
+                </div>
+            </a>
+
+            <!-- Placeholder blogs -->
+            <article class="blog-card blog-card--soon">
+                <img src="Screenshot 2026-08-24 at 5.38.34 PM.png" alt="Coming soon">
+                <div class="blog-card__body">
+                    <h3>Growing Tips</h3>
+                    <p>Water, fertilizer &amp; timing tricks for a thriving nursery.</p>
+                    <span class="blog-card__tag blog-card__tag--soon">coming soon</span>
+                </div>
+            </article>
+
+            <article class="blog-card blog-card--soon">
+                <img src="Screenshot 2026-08-23 at 9.13.11 PM.png" alt="Coming soon">
+                <div class="blog-card__body">
+                    <h3>Bear Cave Lore</h3>
+                    <p>The story behind the cave and the seeds within it.</p>
+                    <span class="blog-card__tag blog-card__tag--soon">coming soon</span>
+                </div>
+            </article>
+
+            <article class="blog-card blog-card--soon">
+                <img src="Screenshot 2025-09-26 at 5.04.53 PM.png" alt="Coming soon">
+                <div class="blog-card__body">
+                    <h3>Market Watch</h3>
+                    <p>Which crops are worth your coins this season.</p>
+                    <span class="blog-card__tag blog-card__tag--soon">coming soon</span>
+                </div>
+            </article>
+        </div>
+    </header>
+
+    <script src="storage.js"></script>
+    <script>
+        renderCoinBalance();
+        // If the Book of Knowledge is already unlocked, mark its tag.
+        const tag = document.getElementById('blog-book-tag');
+        if (isBookUnlocked()) {
+            tag.textContent = 'unlocked';
+            tag.classList.add('blog-card__tag--owned');
+        }
+    </script>
+</body>
+</html>

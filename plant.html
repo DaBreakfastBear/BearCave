@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Nursery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="nursery-body">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- Falling glowing dots on the left -->
+    <div class="snow-column snow-column--left" aria-hidden="true"></div>
+    <!-- Falling glowing dots on the right -->
+    <div class="snow-column snow-column--right" aria-hidden="true"></div>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">1</span>
+    </div>
+
+    <header class="site-header nursery-header">
+        <h1 class="title">THE NURSERY<span id="ants-origin"></span></h1>
+        <p class="nursery-welcome">welcome to the nursery!</p>
+
+        <!-- Three labeled screenshots — the watering can & pest control
+             cards double as live supply readouts (replacing the caption). -->
+        <div class="nursery-row">
+            <figure class="nursery-card">
+                <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Watering can">
+                <figcaption><span class="nursery-amount" data-water-display>0</span><span class="nursery-unit">gal</span></figcaption>
+            </figure>
+            <figure class="nursery-card">
+                <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Fertilizer">
+                <figcaption>fertilizer</figcaption>
+            </figure>
+            <figure class="nursery-card">
+                <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Pest control">
+                <figcaption><span class="nursery-amount" data-pest-display>0</span></figcaption>
+            </figure>
+        </div>
+
+        <!-- 2x4 grid of plantable plots -->
+        <div class="nursery-grid" id="plot-grid">
+            <button type="button" class="plot" data-index="0"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="1"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="2"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="3"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="4"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="5"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+        </div>
+    </header>
+
+    <!-- ===== THE SHOP ===== -->
+    <section class="shop-section">
+        <h2 class="shop-title">THE SHOP</h2>
+        <p class="shop-refresh">refreshes in <span id="refresh-timer">3:00</span></p>
+        <div class="shop-grid" id="shop-grid">
+            <!-- shop cards are generated from the SEEDS config in JS -->
+        </div>
+
+        <!-- Water — bought per gallon -->
+        <div class="water-card" id="water-card">
+            <span class="water-icon" aria-hidden="true">💧</span>
+            <div class="water-card__body">
+                <h3>water</h3>
+                <p class="shop-cost">10 coins per gallon</p>
+                <p class="shop-stock">you have: <span data-water-display>0</span> gal</p>
+                <button type="button" id="buy-water-btn" class="buy-btn">buy 1 gallon</button>
+            </div>
+        </div>
+
+        <!-- Pest control — clears ants (1 per use) -->
+        <div class="water-card" id="pest-card">
+            <span class="water-icon" aria-hidden="true">🧴</span>
+            <div class="water-card__body">
+                <h3>pest control</h3>
+                <p class="shop-cost">100 coins each</p>
+                <p class="shop-stock">you have: <span data-pest-display>0</span></p>
+                <button type="button" id="buy-pest-btn" class="buy-btn">buy 1 pest control</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== INVENTORY ===== -->
+    <section class="inventory-section">
+        <h2 class="shop-title">INVENTORY</h2>
+        <div id="inventory-grid" class="inventory-grid">
+            <p class="inventory-empty">your inventory is empty. buy some seeds!</p>
+        </div>
+    </section>
+
+    <!-- ===== THE FARMERS MARKET ===== -->
+    <section class="shop-section">
+        <h2 class="shop-title">THE FARMERS MARKET</h2>
+        <p class="nursery-welcome">harvest your grown plants, then sell them here for coins.</p>
+        <button type="button" id="sell-all-btn" class="sell-all-btn" disabled>no crops to sell</button>
+        <div id="market-grid" class="shop-grid">
+            <p class="inventory-empty">no crops yet. grow and harvest some plants!</p>
+        </div>
+    </section>
+
+    <!-- ===== Seed picker modal (for planting in a plot) ===== -->
+    <div id="seed-picker" class="picker-modal" aria-hidden="true">
+        <div class="picker-card">
+            <h3>plant a seed</h3>
+            <div id="picker-options" class="picker-options"></div>
+            <button type="button" id="picker-cancel" class="picker-cancel">cancel</button>
+        </div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script>
+        // Generate glowing dots in each column
+        function makeDots(column, count) {
+            for (let i = 0; i < count; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'snow-dot';
+                const size = (Math.random() * 6 + 3).toFixed(1);
+                const duration = (Math.random() * 9 + 7).toFixed(1);
+                const delay = (Math.random() * -16).toFixed(1);
+                const drift = (Math.random() * 40 - 20).toFixed(0);
+                const opacity = (Math.random() * 0.5 + 0.5).toFixed(2);
+                dot.style.width = size + 'px';
+                dot.style.height = size + 'px';
+                dot.style.left = (Math.random() * 100).toFixed(1) + '%';
+                dot.style.animationDuration = duration + 's';
+                dot.style.animationDelay = delay + 's';
+                dot.style.setProperty('--drift', drift + 'px');
+                dot.style.opacity = opacity;
+                column.appendChild(dot);
+            }
+        }
+        const left = document.querySelector('.snow-column--left');
+        const right = document.querySelector('.snow-column--right');
+        makeDots(left, 45);
+        makeDots(right, 45);
+
+        // --- lookups derived from the shared SEEDS ---
+        const seedLabels = {};
+        const cropLabels  = {};
+        const seedImgs    = {};
+        const growTimes   = {};
+        const sellPrices  = {};
+        SEED_KEYS.forEach(k => {
+            seedLabels[k] = SEEDS[k].name + ' seed';
+            cropLabels[k]  = SEEDS[k].name;
+            seedImgs[k]    = SEEDS[k].img;
+            growTimes[k]   = SEEDS[k].growSec * 1000;
+            sellPrices[k]  = SEEDS[k].sell;
+        });
+
+        // A plant that needs watering: positive water need, under 0.5 gal.
+        // (potato needs 0 water → grows freely; carrot/radish/cabbage/cauliflower pause.)
+        function needsWater(type) {
+            const w = SEEDS[type].water;
+            return w > 0 && w < 0.5;
+        }
+
+        // random stock rolls per seed type
+        const rolls = {
+            potato:      () => 7,                     // potato is always 7 in stock
+            carrot:      () => Math.floor(Math.random() * 3) + 2,
+            radish:      () => Math.floor(Math.random() * 3) + 1,
+            cabbage:     () => Math.floor(Math.random() * 2) + 1,
+            cauliflower: () => Math.floor(Math.random() * 2)
+        };
+
+        // ===== Persisted coins =====
+        let coins = getCoins();
+        const coinBalance = document.getElementById('coin-balance');
+        function renderCoins() {
+            coinBalance.textContent = coins;
+            setCoins(coins);
+        }
+
+        // ===== THE SHOP (seeds) =====
+        function shopCardHTML(key) {
+            const s = SEEDS[key];
+            return `
+            <article class="shop-card" data-cost="${s.cost}" data-type="${key}">
+                <img src="${s.img}" alt="${s.name} seed">
+                <h3>${s.name} seed</h3>
+                <p class="shop-cost">${coinText(s.cost)} each</p>
+                <p class="shop-stock">available: <span class="stock-count">0</span></p>
+                <button type="button" class="buy-btn">buy</button>
+            </article>`;
+        }
+        const shopGrid = document.getElementById('shop-grid');
+        shopGrid.innerHTML = SEED_KEYS.map(shopCardHTML).join('');
+
+        function updateCardState(card) {
+            const stockEl = card.querySelector('.stock-count');
+            if (!stockEl || !(card.dataset.type in SEEDS)) return;
+            const stock = parseInt(stockEl.textContent, 10);
+            const cost = parseInt(card.dataset.cost, 10);
+            const btn = card.querySelector('.buy-btn');
+            const canBuy = stock > 0 && coins >= cost;
+            btn.disabled = !canBuy;
+            card.classList.toggle('sold-out', stock <= 0);
+            card.classList.toggle('too-poor', stock > 0 && coins < cost);
+        }
+
+        document.querySelectorAll('#shop-grid .shop-card').forEach(card => {
+            const type = card.dataset.type;
+            card.querySelector('.stock-count').textContent = rolls[type]();
+            card.querySelector('.buy-btn').addEventListener('click', () => {
+                const cost = parseInt(card.dataset.cost, 10);
+                const stockEl = card.querySelector('.stock-count');
+                const stock = parseInt(stockEl.textContent, 10);
+                if (stock > 0 && coins >= cost) {
+                    coins -= cost;
+                    stockEl.textContent = stock - 1;
+                    addToInventory(type);
+                    renderCoins();
+                    refreshAllStates();
+                }
+            });
+        });
+
+        // ===== Water — buy 1 gallon for 10 coins =====
+        const buyWaterBtn = document.getElementById('buy-water-btn');
+        const WATER_PRICE = 10;
+        function updateWaterBuyState() {
+            if (coins < WATER_PRICE) {
+                buyWaterBtn.disabled = true;
+                buyWaterBtn.textContent = 'need ' + coinText(WATER_PRICE);
+            } else {
+                buyWaterBtn.disabled = false;
+                buyWaterBtn.textContent = 'buy 1 gallon';
+            }
+        }
+        buyWaterBtn.addEventListener('click', () => {
+            if (coins < WATER_PRICE) return;
+            coins -= WATER_PRICE;
+            addWater(1);
+            renderCoins();
+            renderWater();
+            refreshAllStates();
+        });
+
+        // ===== Pest control — buy 1 for 100 coins =====
+        const buyPestBtn = document.getElementById('buy-pest-btn');
+        const PEST_PRICE = 100;
+        function updatePestBuyState() {
+            if (coins < PEST_PRICE) {
+                buyPestBtn.disabled = true;
+                buyPestBtn.textContent = 'need ' + coinText(PEST_PRICE);
+            } else {
+                buyPestBtn.disabled = false;
+                buyPestBtn.textContent = 'buy 1 pest control';
+            }
+        }
+        buyPestBtn.addEventListener('click', () => {
+            if (coins < PEST_PRICE) return;
+            coins -= PEST_PRICE;
+            addPestControl(1);
+            renderCoins();
+            renderPestControl();
+            refreshAllStates();
+        });
+
+        // ===== INVENTORY (persisted) =====
+        const INV_KEY  = 'bearcave_inventory';
+        const HARV_KEY = 'bearcave_harvested';
+        const inventoryGrid = document.getElementById('inventory-grid');
+        let inventory = loadJSON(INV_KEY, {});
+        let harvested = loadJSON(HARV_KEY, {});
+        const saveInventory  = () => saveJSON(INV_KEY, inventory);
+        const saveHarvested  = () => saveJSON(HARV_KEY, harvested);
+
+        function addToInventory(type) {
+            inventory[type] = (inventory[type] || 0) + 1;
+            saveInventory();
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const types = Object.keys(inventory).filter(t => inventory[t] > 0);
+            if (types.length === 0) {
+                inventoryGrid.innerHTML = '<p class="inventory-empty">your inventory is empty. buy some seeds!</p>';
+                return;
+            }
+            inventoryGrid.innerHTML = '';
+            types.forEach(type => {
+                const card = document.createElement('div');
+                card.className = 'inv-card inv-card--' + type;
+                card.innerHTML = `
+                    <img src="${seedImgs[type]}" alt="${seedLabels[type]}">
+                    <p class="inv-name">${seedLabels[type]}</p>
+                    <p class="inv-count">×${inventory[type]}</p>
+                `;
+                inventoryGrid.appendChild(card);
+            });
+        }
+
+        // ===== PLANTING (plots persisted, timers tick in the background) =====
+        const PLANTED_IMG = 'Screenshot 2026-05-28 at 6.39.37 PM.png';
+        const GROWN_IMG   = 'Screenshot 2026-08-24 at 5.38.34 PM.png';
+        const EMPTY_IMG   = 'Screenshot 2026-08-23 at 9.07.49 PM.png';
+
+        const PLOTS_KEY = 'bearcave_plots';
+        const marketGrid = document.getElementById('market-grid');
+
+        const plotGrid     = document.getElementById('plot-grid');
+        const picker       = document.getElementById('seed-picker');
+        const pickerOpts   = document.getElementById('picker-options');
+        const pickerCancel = document.getElementById('picker-cancel');
+        let activePlot = null;
+        // plotState[idx] = { type, plantedAt, growMs, pauseMs }
+        let plotState = loadJSON(PLOTS_KEY, {});
+        const savePlots = () => saveJSON(PLOTS_KEY, plotState);
+
+        const PAUSE_AT_MS = 3000;   // watering plants pause with 3 sec left
+
+        // Backfill the `watered` flag for older saves: if a watering plant is not
+        // paused but is already past the 3-sec pause point, it must have been
+        // watered already, so don't re-pause it.
+        Object.keys(plotState).forEach(idx => {
+            const st = plotState[idx];
+            if (!st) return;
+            if (st.watered === undefined) {
+                if (st.pauseMs == null && needsWater(st.type) &&
+                    (st.growMs - (Date.now() - st.plantedAt)) <= PAUSE_AT_MS) {
+                    st.watered = true;
+                } else {
+                    st.watered = false;
+                }
+            }
+        });
+
+        function fmtClock(msLeft) {
+            const s = Math.max(0, Math.ceil(msLeft / 1000));
+            if (s < 60) return s + 's';
+            const m = Math.floor(s / 60);
+            const r = s % 60;
+            return m + ':' + String(r).padStart(2, '0');
+        }
+
+        function openPicker(plot) {
+            activePlot = plot;
+            const available = Object.keys(inventory).filter(t => inventory[t] > 0);
+            pickerOpts.innerHTML = '';
+            if (available.length === 0) {
+                pickerOpts.innerHTML = '<p class="inventory-empty">you have no seeds to plant. visit the shop!</p>';
+            } else {
+                available.forEach(type => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'picker-option inv-card--' + type;
+                    btn.innerHTML = `
+                        <img src="${seedImgs[type]}" alt="${seedLabels[type]}">
+                        <span class="picker-name">${seedLabels[type]} <small>×${inventory[type]}</small></span>
+                    `;
+                    btn.addEventListener('click', () => plantSeed(type));
+                    pickerOpts.appendChild(btn);
+                });
+            }
+            picker.setAttribute('aria-hidden', 'false');
+            picker.classList.add('open');
+        }
+
+        function closePicker() {
+            activePlot = null;
+            picker.setAttribute('aria-hidden', 'true');
+            picker.classList.remove('open');
+        }
+
+        function plantSeed(type) {
+            if (!activePlot) return;
+            inventory[type] -= 1;
+            if (inventory[type] <= 0) delete inventory[type];
+            saveInventory();
+            renderInventory();
+
+            const plot = activePlot;
+            const idx = plot.dataset.index;
+            plotState[idx] = {
+                type,
+                plantedAt: Date.now(),
+                growMs: growTimes[type],
+                pauseMs: null,          // not paused yet
+                watered: false,          // has this plant been watered after its 3-sec pause?
+                lastTouched: Date.now(),// last time the player interacted with this plot
+                ants: false,           // ants present?
+                antsArrivedAt: null    // when ants arrived (for the 10-min death timer)
+            };
+            addPlanted(type);          // lifetime plant count (for achievements)
+            savePlots();
+            updatePlot(plot);
+            closePicker();
+        }
+
+        // Repaint a single plot based on its persisted state. Because we store
+        // a real `plantedAt` timestamp, the timer keeps ticking in the background
+        // even while the page is closed — time simply passes via Date.now().
+        function updatePlot(plot) {
+            const idx = plot.dataset.index;
+            const state = plotState[idx];
+            const overlay = plot.querySelector('.plot-overlay');
+            const img = plot.querySelector('img');
+            if (!state) {
+                overlay.textContent = '';
+                img.src = EMPTY_IMG;
+                plot.classList.remove('planted', 'grown', 'growing', 'needs-water', 'paused');
+                return;
+            }
+            const s = SEEDS[state.type];
+
+            // Ants are on the plant — growth is frozen.
+            if (state.ants) {
+                img.src = PLANTED_IMG;
+                overlay.textContent = '🐜 ants!';
+                plot.classList.add('planted', 'ants');
+                plot.classList.remove('growing', 'grown', 'needs-water', 'paused');
+                return;
+            }
+
+            // Already paused (waiting to be watered) — freeze at 3 sec.
+            if (state.pauseMs != null) {
+                img.src = PLANTED_IMG;
+                overlay.textContent = '💧 water me (' + s.water + ' gal)';
+                plot.classList.add('planted', 'needs-water', 'paused');
+                plot.classList.remove('growing', 'grown');
+                return;
+            }
+
+            const remaining = state.growMs - (Date.now() - state.plantedAt);
+
+            // Watering plants auto-pause at 3 sec remaining — but only once
+            // (after the player waters them, they grow out the final 3 sec).
+            if (needsWater(state.type) && !state.watered && remaining <= PAUSE_AT_MS) {
+                state.pauseMs = PAUSE_AT_MS;
+                savePlots();
+                img.src = PLANTED_IMG;
+                overlay.textContent = '💧 water me (' + s.water + ' gal)';
+                plot.classList.add('planted', 'needs-water', 'paused');
+                plot.classList.remove('growing', 'grown');
+                return;
+            }
+
+            if (remaining <= 0) {
+                img.src = GROWN_IMG;
+                overlay.textContent = 'grown!';
+                plot.classList.add('planted', 'grown');
+                plot.classList.remove('growing', 'needs-water', 'paused');
+            } else {
+                img.src = PLANTED_IMG;
+                overlay.textContent = fmtClock(remaining);
+                plot.classList.add('planted', 'growing');
+                plot.classList.remove('grown', 'needs-water', 'paused');
+            }
+        }
+
+        // Click a paused plot to water it (consumes the plant's water need).
+        function waterPlot(plot) {
+            const idx = plot.dataset.index;
+            const state = plotState[idx];
+            if (!state || state.pauseMs == null) return;
+            const need = SEEDS[state.type].water;
+            const have = getWater();
+            if (have < need) {
+                flashPlot(plot, '💧 need ' + need + ' gal!');
+                return;
+            }
+            setWater(have - need);
+            renderWater();
+            state.watered = true;             // resume the final stretch, don't re-pause
+            state.lastTouched = Date.now();   // watering counts as touching the plant
+            // Resume: shift plantedAt so the timer continues from 3 sec.
+            state.plantedAt = Date.now() - (state.growMs - state.pauseMs);
+            state.pauseMs = null;
+            savePlots();
+            updatePlot(plot);
+        }
+
+        function flashPlot(plot, msg) {
+            const overlay = plot.querySelector('.plot-overlay');
+            overlay.textContent = msg;
+            plot.classList.add('shake');
+            setTimeout(() => {
+                plot.classList.remove('shake');
+                updatePlot(plot);
+            }, 1100);
+        }
+
+        // ====================================================================
+        //  ANTS  — if a plant is untouched for 5 min, a line of small black
+        //  ants slowly emerges from the black base of the "R" in "THE NURSERY"
+        //  and crawls (90° turns only) to that plant. They freeze growth; left
+        //  for 10 min the plant dies and the ants move on to another pot.
+        //  Clearing them costs 1 pest control (bought in the shop for 100 coins).
+        // ====================================================================
+        const IDLE_MS      = 5  * 60 * 1000;   // untouched -> ants appear
+        const ANT_DEATH_MS = 10 * 60 * 1000;   // ants present -> plant dies
+        const ANT_COUNT    = 60;               // number of ants in the line
+        const ANT_SPEED    = 26;               // px per second (slow crawl)
+        const EMERGE_STAGGER = 0.45;           // seconds between ants emerging (spread out)
+        const antAnimations = {};              // idx -> { ants:[el], rafId, idx, startTime }
+
+        function getOriginPoint() {
+            const r = document.getElementById('ants-origin');
+            if (!r) return null;
+            const rect = r.getBoundingClientRect();
+            // emerge from the black dot (period) at the end of "THE NURSERY"
+            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        }
+
+        // Mostly-vertical, right-drifting staircase — 90° turns only.
+        // Each step is 1 inch right, 4 inches down (a 1:4 ratio). 1 inch = 96 CSS px.
+        const INCH = 96;
+        function buildPath(from, to) {
+            const pts = [{ x: from.x, y: from.y }];
+            let cur = { x: from.x, y: from.y };
+            // step out to the right first
+            cur = { x: cur.x + INCH, y: cur.y };
+            pts.push({ x: cur.x, y: cur.y });
+            // descend in 1:4 stairs (1in right, 4in down) to the plant's row
+            let guard = 0;
+            while (cur.y < to.y - 1 && guard++ < 200) {
+                const down = Math.min(4 * INCH, to.y - cur.y);
+                cur = { x: cur.x, y: cur.y + down };
+                pts.push({ x: cur.x, y: cur.y });
+                if (cur.y >= to.y - 1) break;
+                cur = { x: cur.x + INCH, y: cur.y };
+                pts.push({ x: cur.x, y: cur.y });
+            }
+            // final horizontal run to the plant's column
+            if (Math.abs(cur.x - to.x) > 1) {
+                cur = { x: to.x, y: cur.y };
+                pts.push({ x: cur.x, y: cur.y });
+            }
+            // final vertical drop to the plant (usually already there)
+            if (Math.abs(cur.y - to.y) > 1) {
+                cur = { x: cur.x, y: to.y };
+                pts.push({ x: cur.x, y: cur.y });
+            }
+            const cum = [0];
+            for (let i = 1; i < pts.length; i++) {
+                cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+            }
+            return { points: pts, cum, total: cum[cum.length - 1] || 1 };
+        }
+
+        function posOnPath(path, dist) {
+            const d = Math.max(0, Math.min(dist, path.total));
+            for (let i = 1; i < path.points.length; i++) {
+                if (d <= path.cum[i]) {
+                    const seg = path.cum[i] - path.cum[i - 1];
+                    const t = seg === 0 ? 0 : (d - path.cum[i - 1]) / seg;
+                    const a = path.points[i - 1], b = path.points[i];
+                    return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+                }
+            }
+            return path.points[path.points.length - 1];
+        }
+
+        // fade ramp so ants emerge at the R and fade in/out at the loop ends
+        function antFade(p) {
+            const r = 0.12;
+            if (p < r) return p / r;
+            if (p > 1 - r) return (1 - p) / r;
+            return 1;
+        }
+
+        function startAnts(idx) {
+            stopAnts(idx);
+            const ants = [];
+            for (let i = 0; i < ANT_COUNT; i++) {
+                const el = document.createElement('span');
+                el.className = 'ant';
+                el.style.opacity = '0';
+                document.body.appendChild(el);
+                ants.push(el);
+            }
+            const startTime = performance.now();
+            const handle = { ants, rafId: 0, idx, startTime };
+            function frame(now) {
+                const origin = getOriginPoint();
+                const plot = plotGrid.querySelector('.plot[data-index="' + handle.idx + '"]');
+                if (origin && plot) {
+                    const pr = plot.getBoundingClientRect();
+                    const to = { x: pr.left + pr.width / 2, y: pr.top + pr.height / 2 };
+                    const path = buildPath(origin, to);
+                    const cycleSec = Math.max(0.6, path.total / ANT_SPEED);
+                    const elapsed = (now - startTime) / 1000;
+                    for (let i = 0; i < ANT_COUNT; i++) {
+                        const t = elapsed - i * EMERGE_STAGGER;
+                        if (t < 0) { ants[i].style.opacity = '0'; continue; }
+                        let p = (t / cycleSec) % 1;
+                        const pos = posOnPath(path, p * path.total);
+                        ants[i].style.left = pos.x + 'px';
+                        ants[i].style.top = pos.y + 'px';
+                        ants[i].style.opacity = String(antFade(p));
+                    }
+                }
+                handle.rafId = requestAnimationFrame(frame);
+            }
+            handle.rafId = requestAnimationFrame(frame);
+            antAnimations[idx] = handle;
+        }
+
+        function stopAnts(idx) {
+            const h = antAnimations[idx];
+            if (!h) return;
+            cancelAnimationFrame(h.rafId);
+            h.ants.forEach(el => el.remove());
+            delete antAnimations[idx];
+        }
+
+        // Fade ants out (then remove) — used when clearing/moving on, so they
+        // don't just vanish.
+        function fadeStopAnts(idx) {
+            const h = antAnimations[idx];
+            delete antAnimations[idx];
+            if (!h) return;
+            cancelAnimationFrame(h.rafId);
+            h.ants.forEach(el => { el.style.transition = 'opacity 0.4s ease'; el.style.opacity = '0'; });
+            setTimeout(() => h.ants.forEach(el => el.remove()), 450);
+        }
+
+        function spawnAnts(idx) {
+            const state = plotState[idx];
+            if (!state || state.ants) return;
+            state.ants = true;
+            state.antsArrivedAt = Date.now();
+            savePlots();
+            startAnts(idx);
+            const plot = plotGrid.querySelector('.plot[data-index="' + idx + '"]');
+            if (plot) updatePlot(plot);
+        }
+
+        // Clear ants with 1 pest control. Costs a unit of pest control.
+        function clearAntsWithPest(plot) {
+            const idx = plot.dataset.index;
+            const state = plotState[idx];
+            if (!state || !state.ants) return;
+            const have = getPestControl();
+            if (have < 1) {
+                flashPlot(plot, '🧴 need pest control!');
+                return;
+            }
+            setPestControl(have - 1);
+            renderPestControl();
+            state.ants = false;
+            state.antsArrivedAt = null;
+            state.lastTouched = Date.now();
+            fadeStopAnts(idx);
+            savePlots();
+            updatePlot(plot);
+        }
+
+        // Find another living, growing pot (no ants yet) for the ants to move to.
+        function findAntsTarget(skipIdx) {
+            const skip = String(skipIdx);
+            for (const k of Object.keys(plotState)) {
+                if (k === skip) continue;
+                const st = plotState[k];
+                if (!st || st.ants) continue;
+                const p = plotGrid.querySelector('.plot[data-index="' + k + '"]');
+                if (p && !p.classList.contains('grown')) return k;
+            }
+            return null;
+        }
+
+        function killPlant(idx, msg) {
+            const state = plotState[idx];
+            const hadAnts = state && state.ants;
+            // clear the dead plot
+            delete plotState[idx];
+            savePlots();
+            const plot = plotGrid.querySelector('.plot[data-index="' + idx + '"]');
+            if (plot) {
+                plot.querySelector('img').src = EMPTY_IMG;
+                const overlay = plot.querySelector('.plot-overlay');
+                overlay.textContent = msg;
+                plot.classList.remove('planted', 'grown', 'growing', 'needs-water', 'paused', 'ants');
+                setTimeout(() => { if (!plotState[idx]) overlay.textContent = ''; }, 2500);
+            }
+            // the ants move on to another pot (or fade out if there's none)
+            if (hadAnts) {
+                const newIdx = findAntsTarget(idx);
+                fadeStopAnts(idx);
+                if (newIdx != null) {
+                    plotState[newIdx].ants = true;
+                    plotState[newIdx].antsArrivedAt = Date.now();
+                    savePlots();
+                    const newPlot = plotGrid.querySelector('.plot[data-index="' + newIdx + '"]');
+                    if (newPlot) updatePlot(newPlot);
+                    startAnts(newIdx);
+                }
+            }
+        }
+
+        plotGrid.querySelectorAll('.plot').forEach(plot => {
+            plot.addEventListener('click', () => {
+                const idx = plot.dataset.index;
+                const state = plotState[idx];
+                if (!state) {
+                    openPicker(plot);                       // empty plot
+                    return;
+                }
+                if (state.ants) {
+                    clearAntsWithPest(plot);             // ants -> need pest control to clear
+                    return;
+                }
+                state.lastTouched = Date.now();             // a touch resets the ant timer
+                savePlots();
+                if (plot.classList.contains('grown')) {
+                    harvestPlot(plot);                     // grown -> collect
+                } else if (state.pauseMs != null || plot.classList.contains('needs-water')) {
+                    waterPlot(plot);                        // paused -> water
+                }
+                // growing plots: the click is just a touch
+            });
+        });
+
+        function harvestPlot(plot) {
+            const idx = plot.dataset.index;
+            const state = plotState[idx];
+            if (!state) return;
+            stopAnts(idx);
+            harvested[state.type] = (harvested[state.type] || 0) + 1;
+            delete plotState[idx];
+            savePlots();
+            saveHarvested();
+            plot.querySelector('img').src = EMPTY_IMG;
+            plot.querySelector('.plot-overlay').textContent = '';
+            plot.classList.remove('planted', 'grown', 'growing', 'needs-water', 'paused', 'ants');
+            renderMarket();
+        }
+
+        // ===== FARMERS MARKET — sell ALL crops at once =====
+        const sellAllBtn = document.getElementById('sell-all-btn');
+        function totalHarvestCount() {
+            return Object.values(harvested).reduce((sum, n) => sum + n, 0);
+        }
+        function totalHarvestValue() {
+            return Object.keys(harvested).reduce((sum, t) => sum + sellPrices[t] * harvested[t], 0);
+        }
+        function refreshSellAllBtn() {
+            const total = totalHarvestCount();
+            if (total === 0) {
+                sellAllBtn.disabled = true;
+                sellAllBtn.textContent = 'no crops to sell';
+            } else {
+                sellAllBtn.disabled = false;
+                sellAllBtn.textContent = `sell all crops (×${total} → ${coinText(totalHarvestValue())})`;
+            }
+        }
+        sellAllBtn.addEventListener('click', () => {
+            if (totalHarvestCount() === 0) return;
+            coins += totalHarvestValue();
+            harvested = {};
+            saveHarvested();
+            renderCoins();
+            renderMarket();
+            refreshAllStates();
+        });
+
+        function renderMarket() {
+            const types = Object.keys(harvested).filter(t => harvested[t] > 0);
+            if (types.length === 0) {
+                marketGrid.innerHTML = '<p class="inventory-empty">no crops yet. grow and harvest some plants!</p>';
+                refreshSellAllBtn();
+                return;
+            }
+            marketGrid.innerHTML = '';
+            types.forEach(type => {
+                const count = harvested[type];
+                const card = document.createElement('article');
+                card.className = 'market-card inv-card--' + type;
+                card.innerHTML = `
+                    <img src="${GROWN_IMG}" alt="${cropLabels[type]}">
+                    <h3>${cropLabels[type]}</h3>
+                    <p class="shop-cost">${coinText(sellPrices[type])} each</p>
+                    <p class="shop-stock">harvested: <span class="stock-count">${count}</span></p>
+                    <p class="shop-stock">total: <b>${coinText(sellPrices[type] * count)}</b></p>
+                `;
+                marketGrid.appendChild(card);
+            });
+            refreshSellAllBtn();
+        }
+
+        // ===== Refresh all buy-button states =====
+        function refreshAllStates() {
+            document.querySelectorAll('#shop-grid .shop-card').forEach(updateCardState);
+            updateWaterBuyState();
+            updatePestBuyState();
+            refreshSellAllBtn();
+        }
+
+        // ===== Initial render (restores persisted state) =====
+        renderCoins();
+        renderWater();
+        renderPestControl();
+        renderInventory();
+        renderMarket();
+        plotGrid.querySelectorAll('.plot').forEach(updatePlot);  // restore plots
+        refreshAllStates();
+
+        // Restore ant visuals for plots that already had ants (or kill if too long).
+        Object.keys(plotState).forEach(idx => {
+            const st = plotState[idx];
+            if (st && st.ants) {
+                if (st.antsArrivedAt && Date.now() - st.antsArrivedAt >= ANT_DEATH_MS) {
+                    killPlant(idx, 'the plant died :(');
+                } else {
+                    startAnts(idx);
+                }
+            }
+        });
+
+        // Periodic ant check: spawn ants on neglected plants, kill dead ones.
+        setInterval(() => {
+            Object.keys(plotState).forEach(idx => {
+                const state = plotState[idx];
+                if (!state) return;
+                if (state.ants) {
+                    if (state.antsArrivedAt && Date.now() - state.antsArrivedAt >= ANT_DEATH_MS) {
+                        killPlant(idx, 'the plant died :(');
+                    }
+                    return;
+                }
+                const plot = plotGrid.querySelector('.plot[data-index="' + idx + '"]');
+                if (!plot || plot.classList.contains('grown')) return;  // only living, growing plants
+                const idleSince = state.lastTouched || state.plantedAt;
+                if (Date.now() - idleSince >= IDLE_MS) spawnAnts(idx);
+            });
+        }, 2000);
+
+        pickerCancel.addEventListener('click', closePicker);
+        picker.addEventListener('click', e => { if (e.target === picker) closePicker(); });
+
+        // tick all plots every second
+        setInterval(() => {
+            plotGrid.querySelectorAll('.plot').forEach(updatePlot);
+        }, 1000);
+
+        // ===== Shop refresh every 3 minutes =====
+        const REFRESH_MS = 3 * 60 * 1000;
+        const refreshTimerEl = document.getElementById('refresh-timer');
+        let nextRefresh = Date.now() + REFRESH_MS;
+        function fmt(msLeft) {
+            const s = Math.max(0, Math.ceil(msLeft / 1000));
+            const m = Math.floor(s / 60);
+            const r = s % 60;
+            return m + ':' + String(r).padStart(2, '0');
+        }
+        function refreshShop() {
+            document.querySelectorAll('#shop-grid .shop-card').forEach(card => {
+                card.querySelector('.stock-count').textContent = rolls[card.dataset.type]();
+                updateCardState(card);
+            });
+            nextRefresh = Date.now() + REFRESH_MS;
+        }
+        setInterval(() => {
+            const msLeft = nextRefresh - Date.now();
+            if (msLeft <= 0) refreshShop();
+            else refreshTimerEl.textContent = fmt(msLeft);
+        }, 1000);
+    </script>
+</body>
+</html>
