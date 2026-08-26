@@ -161,10 +161,11 @@ body {
 .nursery-card {
     flex: 1 1 240px;
     max-width: 280px;
-    background: var(--white);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
     text-align: center;
     position: relative;
 }
@@ -173,7 +174,8 @@ body {
     display: block;
     width: 100%;
     height: 220px;
-    object-fit: cover;
+    object-fit: contain;
+    background: transparent;
 }
 
 /* Live supply readout in the caption (water gallons / pest count),
@@ -211,24 +213,24 @@ body {
 .plot {
     position: relative;
     padding: 0;
-    border: 3px solid var(--dark-blue);
-    border-radius: 12px;
+    border: none;
+    border-radius: 0;
     overflow: hidden;
     cursor: pointer;
-    background: var(--white);
+    background: transparent;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .plot:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 18px rgba(27, 73, 101, 0.3);
 }
 
 .plot img {
     display: block;
     width: 100%;
     height: 160px;
-    object-fit: cover;
+    object-fit: contain;
+    background: transparent;
 }
 
 .plot-overlay {
@@ -246,13 +248,12 @@ body {
     min-height: 1.6em;
 }
 
-.plot.growing { border-color: #5aa9e6; }
-.plot.grown   { border-color: #8aa884; }
+.plot.growing { }
+.plot.grown   { }
 .plot.grown .plot-overlay { background: rgba(138, 168, 132, 0.9); }
 
 /* Plot waiting to be watered */
 .plot.needs-water {
-    border-color: #3aa3d0;
     animation: water-pulse 1.2s ease-in-out infinite;
 }
 .plot.needs-water .plot-overlay {
@@ -399,25 +400,27 @@ body {
 }
 
 .shop-card, .market-card, .upgrade-card {
-    background: var(--white);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
     padding: 1rem;
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
 }
 
 .shop-card:hover, .market-card:hover, .upgrade-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 24px rgba(27, 73, 101, 0.35);
+    box-shadow: none;
 }
 
+/* Seed/crop images are transparent PNGs — contain them with no backdrop
+   so they float (same natural ratio in the shop, market & picker). */
 .shop-card img, .market-card img, .upgrade-card img {
     display: block;
     width: 100%;
     height: 160px;
-    object-fit: cover;
-    border-radius: 12px;
+    object-fit: contain;
+    background: transparent;
 }
 
 .shop-card h3, .market-card h3, .upgrade-card h3 {
@@ -561,10 +564,10 @@ body {
 }
 
 .inv-card {
-    background: var(--white);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
     padding: 1rem;
     position: relative;
     animation: inv-pop 0.25s ease;
@@ -581,8 +584,7 @@ body {
     width: 100%;
     height: 160px;
     object-fit: contain;
-    background: var(--light-blue);
-    border-radius: 12px;
+    background: transparent;
 }
 
 .inv-name {
@@ -651,10 +653,10 @@ body {
 }
 
 .picker-option {
-    background: var(--white);
+    background: transparent;
     border: none;
-    border-radius: 12px;
-    overflow: hidden;
+    border-radius: 0;
+    overflow: visible;
     padding: 0.5rem;
     cursor: pointer;
     transition: transform 0.12s ease;
@@ -662,12 +664,14 @@ body {
 
 .picker-option:hover { transform: translateY(-3px); }
 
+/* Same ratio as the shop: contain the transparent seed png with no
+   backdrop, so it shows at its natural aspect ratio. */
 .picker-option img {
     display: block;
     width: 100%;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
+    height: 140px;
+    object-fit: contain;
+    background: transparent;
 }
 
 .picker-name {
@@ -757,10 +761,10 @@ body {
 }
 
 .book-card {
-    background: var(--white);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25);
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
     padding: 1rem;
     text-align: left;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -768,7 +772,7 @@ body {
 
 .book-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 24px rgba(27, 73, 101, 0.35);
+    box-shadow: none;
 }
 
 .book-card img {
@@ -776,8 +780,7 @@ body {
     width: 100%;
     height: 150px;
     object-fit: contain;
-    background: var(--light-blue);
-    border-radius: 12px;
+    background: transparent;
 }
 
 .book-card h3 {
@@ -924,6 +927,21 @@ body {
     text-transform: lowercase;
 }
 
+/* Transparent variant (e.g. the achievements trophy card): no white
+   backdrop, image contained so the transparent PNG floats. */
+.home-card--transparent {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+.home-card--transparent:hover {
+    box-shadow: none;
+}
+.home-card--transparent img {
+    object-fit: contain;
+    background: transparent;
+}
+
 /* ===== Back link ===== */
 .back-link {
     display: inline-block;
@@ -1048,7 +1066,7 @@ body {
 /* ===== Reset sparkle (bottom-right corner, on every page) ===== */
 #reset-sparkle {
     position: fixed;
-    right: 10px;
+    left: 10px;
     bottom: 10px;
     width: 26px;
     height: 26px;
@@ -1161,6 +1179,53 @@ body {
     color: var(--dark-blue);
 }
 .ach-card--unlocked .ach-status { color: #d9a800; }
+
+/* ===== Achievement unlock toast (top-center popup, 3s) ===== */
+#ach-toast-container {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+.ach-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1.25rem;
+    background: linear-gradient(180deg, #fffdf2, #ffffff);
+    border: 2px solid #d9a800;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    color: var(--dark-blue);
+    font-weight: 700;
+    opacity: 0;
+    transform: translateY(-24px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    max-width: 90vw;
+}
+.ach-toast--show { opacity: 1; transform: translateY(0); }
+.ach-toast__icon {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.ach-toast__icon img { width: 36px; height: 36px; object-fit: contain; display: block; }
+.ach-toast__body { display: flex; flex-direction: column; line-height: 1.2; }
+.ach-toast__body b {
+    font-size: 0.72rem;
+    color: #d9a800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.ach-toast__body span { font-size: 1.02rem; }
 
 /* ===== Fertilizer "armed" state ===== */
 .buy-btn.armed {

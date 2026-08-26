@@ -26,6 +26,9 @@
 
     <header class="site-header">
         <h1 class="title">BEAR CAVE</h1>
+        <p class="nursery-welcome">welcome to your bear cave!</p>
+        <!-- Shown only while broke & the free start coin is unclaimed -->
+        <p id="broke-hint" class="broke-hint" hidden>0 coins? try looking somewhere else!</p>
 
         <!-- Grid of navigation cards -->
         <nav class="home-grid">
@@ -37,16 +40,19 @@
                 <img src="Untitled design.png" alt="Blogs">
                 <span class="home-card__label">blogs</span>
             </a>
-            <a href="achievements.html" class="home-card" aria-label="View achievements">
-                <img src="Screenshot 2025-09-26 at 5.04.53 PM.png" alt="Achievements">
+            <a href="achievements.html" class="home-card home-card--transparent" aria-label="View achievements">
+                <img src="award.png" alt="Achievements">
                 <span class="home-card__label">achievements</span>
             </a>
         </nav>
     </header>
 
     <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script src="achievements.js"></script>
     <script>
         renderCoinBalance();
+        renderBrokeHint();
 
         // --- Hidden free starting coin ---
         // Only shows up AFTER the player has visited the nursery (plant.html).
@@ -68,7 +74,18 @@
             if (claimStartCoin()) {
                 homeCoin.hidden = true;       // gone & useless now
                 renderCoinBalance();         // 0 -> 1 (hint disappears)
+                renderBrokeHint();
             }
+        });
+
+        // Re-render when returning to this page via the browser back button
+        // (back-forward cache restores the old DOM without re-running JS,
+        // so the coin / hint would otherwise be stale). `pageshow` fires on
+        // both a fresh load and a bfcache restore.
+        window.addEventListener('pageshow', () => {
+            renderCoinBalance();
+            renderBrokeHint();
+            renderHomeCoin();
         });
     </script>
 </body>

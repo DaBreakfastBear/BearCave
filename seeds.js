@@ -58,6 +58,26 @@ const SEEDS = {
 };
 const SEED_KEYS = Object.keys(SEEDS);
 
+// ====================================================================
+//  Per-crop art (transparent PNGs), shared by plant.html & achievements.html.
+//  Crops without custom art fall back to the generic sprout / grown imgs.
+//  Achievement tier icons (per crop):
+//    1 plant    -> seed packet (SEEDS[t].img)
+//    5 plants   -> sprout (SPROUT_IMG)
+//    20 plants  -> the crop's pot (plantedImg)
+//    100 plants -> the finished crop (grownImg)
+// ====================================================================
+const EMPTY_IMG  = 'emptypot.png';
+const SPROUT_IMG = 'sprout.png';                  // generic seedling / fallback pot
+const GROWN_IMG  = 'Screenshot 2026-08-24 at 5.38.34 PM.png'; // generic grown fallback
+const CROP_IMGS  = {
+    potato: { planted: 'potatopot.png', grown: 'potatos.png', diseased: 'diseased potato.png' },
+    carrot: { planted: 'carrotpot.png', grown: 'carrot.png',  diseased: 'diseased carrot.png' }
+};
+const plantedImg  = t => { const c = CROP_IMGS[t]; return c && c.planted  ? c.planted  : SPROUT_IMG; };
+const grownImg    = t => { const c = CROP_IMGS[t]; return c && c.grown    ? c.grown    : GROWN_IMG;   };
+const diseasedImg = t => { const c = CROP_IMGS[t]; return c && c.diseased ? c.diseased : plantedImg(t); };
+
 // helper used by the Book of Knowledge page
 function coinText(n) { return n === 1 ? '1 coin' : n + ' coins'; }
 

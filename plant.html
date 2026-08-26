@@ -40,27 +40,27 @@
              cards double as live supply readouts (replacing the caption). -->
         <div class="nursery-row">
             <figure class="nursery-card">
-                <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Watering can">
+                <img src="wateringcan.png" alt="Watering can">
                 <figcaption><span class="nursery-amount" data-water-display>0</span><span class="nursery-unit">gal</span></figcaption>
             </figure>
             <figure class="nursery-card">
-                <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Fertilizer">
+                <img src="fertilizer.png" alt="Fertilizer">
                 <figcaption><span class="nursery-amount" data-fert-display>0</span></figcaption>
             </figure>
             <figure class="nursery-card">
-                <img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Pest control">
+                <img src="pester.png" alt="Pest control">
                 <figcaption><span class="nursery-amount" data-pest-display>0</span></figcaption>
             </figure>
         </div>
 
         <!-- 2x4 grid of plantable plots -->
         <div class="nursery-grid" id="plot-grid">
-            <button type="button" class="plot" data-index="0"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
-            <button type="button" class="plot" data-index="1"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
-            <button type="button" class="plot" data-index="2"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
-            <button type="button" class="plot" data-index="3"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
-            <button type="button" class="plot" data-index="4"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
-            <button type="button" class="plot" data-index="5"><img src="Screenshot 2026-08-23 at 9.07.49 PM.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="0"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="1"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="2"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="3"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="4"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+            <button type="button" class="plot" data-index="5"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
         </div>
     </header>
 
@@ -136,6 +136,7 @@
 
     <script src="storage.js"></script>
     <script src="seeds.js"></script>
+    <script src="achievements.js"></script>
     <script>
         // Generate glowing dots in each column
         function makeDots(column, count) {
@@ -395,9 +396,22 @@
         }
 
         // ===== PLANTING (plots persisted, timers tick in the background) =====
-        const PLANTED_IMG = 'Screenshot 2026-05-28 at 6.39.37 PM.png';
-        const GROWN_IMG   = 'Screenshot 2026-08-24 at 5.38.34 PM.png';
-        const EMPTY_IMG   = 'Screenshot 2026-08-23 at 9.07.49 PM.png';
+        // Per-crop art (EMPTY_IMG, SPROUT_IMG, CROP_IMGS, plantedImg,
+        // grownImg, diseasedImg) now lives in seeds.js so achievements.html
+        // can share it.
+
+        // Growth stage on a plot, by time fraction (the "math equation"):
+        //   0 – ½  of grow time  -> empty pot
+        //   ½ – ¾               -> sprout
+        //   ¾ – 1 (and grown)   -> the crop's own pot image
+        // The finished crop png (potato/carrot) only appears in the Farmers
+        // Market — a grown plot stays on the last (pot) stage.
+        function stageImage(type, remaining, growMs) {
+            const elapsedFrac = 1 - Math.max(0, remaining) / growMs;
+            if (elapsedFrac < 0.5)  return EMPTY_IMG;
+            if (elapsedFrac < 0.75) return SPROUT_IMG;
+            return plantedImg(type);
+        }
 
         const PLOTS_KEY = 'bearcave_plots';
         const marketGrid = document.getElementById('market-grid');
@@ -489,6 +503,7 @@
             savePlots();
             updatePlot(plot);
             closePicker();
+            checkAchievements();
         }
 
         // Repaint a single plot based on its persisted state. Because we store
@@ -502,23 +517,24 @@
             if (!state) {
                 overlay.textContent = '';
                 img.src = EMPTY_IMG;
-                plot.classList.remove('planted', 'grown', 'growing', 'needs-water', 'paused');
+                plot.classList.remove('planted', 'grown', 'growing', 'needs-water', 'paused', 'ants');
                 return;
             }
             const s = SEEDS[state.type];
 
-            // Ants are on the plant — growth is frozen.
+            // Ants are on the plant — growth is frozen. The plant looks
+            // diseased (per-crop diseased art when available).
             if (state.ants) {
-                img.src = PLANTED_IMG;
+                img.src = diseasedImg(state.type);
                 overlay.textContent = '🐜 ants!';
                 plot.classList.add('planted', 'ants');
                 plot.classList.remove('growing', 'grown', 'needs-water', 'paused');
                 return;
             }
 
-            // Already paused (waiting to be watered) — freeze at 3 sec.
+            // Already paused (waiting to be watered) — freeze at the pause point.
             if (state.pauseMs != null) {
-                img.src = PLANTED_IMG;
+                img.src = stageImage(state.type, state.pauseMs, state.growMs);
                 overlay.textContent = '💧 water me (' + s.water + ' gal)';
                 plot.classList.add('planted', 'needs-water', 'paused');
                 plot.classList.remove('growing', 'grown');
@@ -532,7 +548,7 @@
             if (needsWater(state.type) && !state.watered && remaining <= PAUSE_AT_MS) {
                 state.pauseMs = PAUSE_AT_MS;
                 savePlots();
-                img.src = PLANTED_IMG;
+                img.src = stageImage(state.type, state.pauseMs, state.growMs);
                 overlay.textContent = '💧 water me (' + s.water + ' gal)';
                 plot.classList.add('planted', 'needs-water', 'paused');
                 plot.classList.remove('growing', 'grown');
@@ -540,12 +556,14 @@
             }
 
             if (remaining <= 0) {
-                img.src = GROWN_IMG;
+                // Grown: stay on the last (pot) stage — the finished crop
+                // png only appears in the Farmers Market.
+                img.src = stageImage(state.type, 0, state.growMs);
                 overlay.textContent = 'grown!';
                 plot.classList.add('planted', 'grown');
                 plot.classList.remove('growing', 'needs-water', 'paused');
             } else {
-                img.src = PLANTED_IMG;
+                img.src = stageImage(state.type, remaining, state.growMs);
                 overlay.textContent = fmtClock(remaining);
                 plot.classList.add('planted', 'growing');
                 plot.classList.remove('grown', 'needs-water', 'paused');
@@ -573,6 +591,7 @@
             state.pauseMs = null;
             savePlots();
             updatePlot(plot);
+            checkAchievements();
         }
 
         function flashPlot(plot, msg) {
@@ -750,6 +769,7 @@
             fadeStopAnts(idx);
             savePlots();
             updatePlot(plot);
+            checkAchievements();
         }
 
         // Find another living, growing pot (no ants yet) for the ants to move to.
@@ -879,7 +899,7 @@
                 const card = document.createElement('article');
                 card.className = 'market-card inv-card--' + type;
                 card.innerHTML = `
-                    <img src="${GROWN_IMG}" alt="${cropLabels[type]}">
+                    <img src="${grownImg(type)}" alt="${cropLabels[type]}">
                     <h3>${cropLabels[type]}</h3>
                     <p class="shop-cost">${coinText(sellPrices[type])} each</p>
                     <p class="shop-stock">harvested: <span class="stock-count">${count}</span></p>
@@ -897,6 +917,7 @@
             updatePestBuyState();
             updateFertBuyState();
             refreshSellAllBtn();
+            checkAchievements();   // wealth / stockpile / hydrated / prepared / market / fert-use
         }
 
         // ===== Initial render (restores persisted state) =====
@@ -969,6 +990,15 @@
             if (msLeft <= 0) refreshShop();
             else refreshTimerEl.textContent = fmt(msLeft);
         }, 1000);
+
+        // Re-sync when returning to this page via the browser back button
+        // (bfcache restores the old DOM without re-running JS, so the coin
+        // bar / broke-hint could go stale if coins changed on another page).
+        window.addEventListener('pageshow', () => {
+            coins = getCoins();
+            renderCoins();
+            refreshAllStates();
+        });
     </script>
 </body>
 </html>

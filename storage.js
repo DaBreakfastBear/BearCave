@@ -125,18 +125,22 @@ function claimStartCoin() {
 // --- Helper: refresh every #coin-balance on the page ---
 // When the player is broke (0 coins) and hasn't found the free starting
 // coin yet, the bar shows a hint nudging them to look for it.
+// The "0 coins? try looking somewhere else!" nudge now lives in its own
+// banner under each page's welcome text (see #broke-hint), NOT in the coin
+// count area. The bar always just shows the current number.
 function renderCoinBalance() {
     const el = document.getElementById('coin-balance');
     if (!el) return;
-    const n = getCoins();
+    el.textContent = getCoins();
     const bar = el.closest('.coins-bar');
-    if (n === 0 && !isStartCoinClaimed()) {
-        el.textContent = '0 coins? try looking somewhere else!';
-        if (bar) bar.classList.add('coins-bar--hint');
-    } else {
-        el.textContent = n;
-        if (bar) bar.classList.remove('coins-bar--hint');
-    }
+    if (bar) bar.classList.remove('coins-bar--hint');
+}
+
+// Show/hide the broke-hint banner on any page that has one.
+function renderBrokeHint() {
+    const hint = document.getElementById('broke-hint');
+    if (!hint) return;
+    hint.hidden = !(getCoins() === 0 && !isStartCoinClaimed());
 }
 
 // --- Helper: refresh water displays (only present on the nursery page) ---
@@ -166,8 +170,10 @@ function renderPestControl() {
 function resetEverything() {
     addReset();  // lifetime meta: count this reset (survives the wipe below)
     Object.keys(localStorage)
-        .filter(k => k.indexOf('bearcave_') === 0)
+        .filter(k => k.indexOf('bearcave_') === 0 && k !== VISITED_PLANT_KEY)
         .forEach(k => localStorage.removeItem(k));
+    // Keep "visited the nursery" so the home page's free 1-time starting
+    // coin reappears on the clean-slate start (coins back to 0, unclaimed).
     try { location.reload(); } catch (e) {}
 }
 

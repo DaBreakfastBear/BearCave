@@ -35,142 +35,16 @@
 
     <script src="storage.js"></script>
     <script src="seeds.js"></script>
+    <script src="achievements.js"></script>
     <script>
         renderCoinBalance();
+        renderBrokeHint();
 
-        // =====================================================================
-        //  EDIT YOUR ACHIEVEMENT WORDING HERE  ✏️
-        //  Just change the text inside the quotes (title + desc).
-        //  The numbers in `goal` and the `current` functions make them work.
-        // =====================================================================
-
-        // ---- 🌱 PLANTING (per crop, 4 tiers each) ----
-        const WORDING = {
-            potato: {
-                1:   { title: 'first potato',                      desc: 'plant your first potato.' },
-                5:   { title: 'potatopotatopotatopotatopotato',     desc: 'plant 5 potatoes.' },
-                20:  { title: 'potato x20',                         desc: 'plant 20 potatoes.' },
-                100: { title: 'potato x100',                        desc: 'plant 100 potatoes.' }
-            },
-            carrot: {
-                1:   { title: 'first carrot',   desc: 'plant your first carrot.' },
-                5:   { title: 'carrot ^ 5',      desc: 'plant 5 carrots.' },
-                20:  { title: 'carrot x20',     desc: 'plant 20 carrots.' },
-                100: { title: 'carrot x100',    desc: 'plant 100 carrots.' }
-            },
-            radish: {
-                1:   { title: 'first radish',  desc: 'plant your first radish.' },
-                5:   { title: 'radish x5',     desc: 'plant 5 radishes.' },
-                20:  { title: 'radish x20',    desc: 'plant 20 radishes.' },
-                100: { title: 'radish x100',   desc: 'plant 100 radishes.' }
-            },
-            cabbage: {
-                1:   { title: 'first cabbage', desc: 'plant your first cabbage.' },
-                5:   { title: 'cabbage x5',    desc: 'plant 5 cabbages.' },
-                20:  { title: 'cabbage x20',   desc: 'plant 20 cabbages.' },
-                100: { title: 'cabbage x100',  desc: 'plant 100 cabbages.' }
-            },
-            cauliflower: {
-                1:   { title: 'first cauliflower', desc: 'plant your first cauliflower.' },
-                5:   { title: 'cauliflower x5',   desc: 'plant 5 cauliflowers.' },
-                20:  { title: 'cauliflower x20',  desc: 'plant 20 cauliflowers.' },
-                100: { title: 'cauliflower x100', desc: 'plant 100 cauliflowers.' }
-            }
-        };
-        const PLANT_TIERS = [1, 5, 20, 100];
-
-        // Helper to build an "item" object: { icon, title, desc, current, goal }
-        function item(icon, title, desc, current, goal) {
-            return { icon, title, desc, current: Math.min(current, goal), goal, done: current >= goal };
-        }
-
-        // ---- 💧 WATERING ----
-        const WATERING_ACH = [
-            item('💧', 'first drop',   'water a plant for the first time.',  getWateredCount(),     1),
-            item('💧', 'rainmaker',     'water plants 10 times.',            getWateredCount(),    10),
-            item('💧', 'downpour',     'water plants 50 times.',            getWateredCount(),    50),
-            item('💧', 'wellspring',   'water plants 100 times.',           getWateredCount(),   100),
-            item('💧', 'hydrated',      'own 10 gallons of water at once.', getWater(),           10),
-            item('💧', 'reservoir',    'own 100 gallons of water at once.', getWater(),         100)
-        ];
-
-        // ---- 🪴 FERTILIZER ----
-        const FERT_ACH = [
-            item('🪴', 'first feed',  'use fertilizer on a plant.',        getFertUsed(),      1),
-            item('🪴', 'green thumb', 'use fertilizer 10 times.',          getFertUsed(),     10),
-            item('🪴', 'super soil',  'use fertilizer 50 times.',          getFertUsed(),     50),
-            item('🪴', 'stockpile',   'own 10 fertilizer at once.',        getFertilizer(),  10)
-        ];
-
-        // ---- 🌾 MARKET (selling crops) ----
-        const MARKET_ACH = [
-            item('🌾', 'first sale', 'sell your first crop.',              getSoldCount(),   1),
-            item('🌾', 'merchant',   'sell 50 crops in total.',            getSoldCount(),  50),
-            item('🌾', 'trader',     'sell 100 crops in total.',          getSoldCount(), 100),
-            item('🌾', 'tycoon',     'sell 500 crops in total.',          getSoldCount(), 500)
-        ];
-
-        // ---- 🐜 PESTS ----
-        const PESTS_ACH = [
-            item('🐜', 'first clear',    'shoo ants off a plant.',          getAntsCleared(),  1),
-            item('🐜', 'ant slayer',     'clear ants 10 times.',            getAntsCleared(), 10),
-            item('🐜', 'exterminator',  'clear ants 50 times.',            getAntsCleared(), 50),
-            item('🐜', 'prepared',        'buy pest control.',              getPestControl(),  1)
-        ];
-
-        // ---- 🪙 WEALTH (coins) ----
-        const WEALTH_ACH = [
-            item('🪙', 'pocket money', 'hold 100 coins at once.',   getCoins(),  100),
-            item('🪙', 'saver',         'hold 500 coins at once.',   getCoins(),  500),
-            item('🪙', 'rich bear',     'hold 1000 coins at once.',  getCoins(), 1000),
-            item('🪙', 'tycoon bear',   'hold 5000 coins at once.', getCoins(), 5000)
-        ];
-
-        // ---- ✨ RESET (survives resets) ----
-        const RESET_ACH = [
-            item('✨', 'fresh start',  'reset the game once.',   getResets(),  1),
-            item('✨', 'clean slate',  'reset the game 3 times.', getResets(), 3),
-            item('✨', 'do-over',       'reset the game 5 times.', getResets(), 5),
-            item('✨', 'groundhog',     'reset the game 10 times.', getResets(), 10)
-        ];
-
-        // =====================================================================
-        //  Long-list render — every achievement in one scrolling list,
-        //  grouped by category (no separate tabs).
-        // =====================================================================
+        // Achievement definitions live in achievements.js (shared, so the
+        // unlock toast can fire from any page). This page just renders them.
         const grid    = document.getElementById('ach-grid');
         const summary = document.getElementById('ach-summary');
-
-        // Build the planting items from WORDING.
-        function plantingItems() {
-            const out = [];
-            SEED_KEYS.forEach(key => {
-                const count = plantedCount(key);
-                PLANT_TIERS.forEach(n => {
-                    const w = WORDING[key][n];
-                    out.push({
-                        icon:    '<img src="' + SEEDS[key].img + '" alt="' + SEEDS[key].name + '">',
-                        title:   w.title,
-                        desc:    w.desc,
-                        current: Math.min(count, n),
-                        goal:    n,
-                        done:    count >= n
-                    });
-                });
-            });
-            return out;
-        }
-
-        // Each group: { label, items }
-        const GROUPS = [
-            { label: '🌱 planting',   items: plantingItems()  },
-            { label: '💧 watering',   items: WATERING_ACH     },
-            { label: '🪴 fertilizer',  items: FERT_ACH         },
-            { label: '🌾 market',      items: MARKET_ACH       },
-            { label: '🐜 pests',       items: PESTS_ACH        },
-            { label: '🪙 wealth',      items: WEALTH_ACH       },
-            { label: '✨ reset',       items: RESET_ACH        }
-        ];
+        const GROUPS = achGroups();
 
         function makeCard(a) {
             const card = document.createElement('article');
@@ -206,6 +80,9 @@
         }
 
         render();
+
+        // Re-render when returning via the browser back button (bfcache).
+        window.addEventListener('pageshow', render);
     </script>
 </body>
 </html>
