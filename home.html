@@ -21,7 +21,7 @@
     <div class="coins-bar">
         <span class="coins-coin" aria-hidden="true"></span>
         <span class="coins-label">coins:</span>
-        <span id="coin-balance" class="coins-amount">1</span>
+        <span id="coin-balance" class="coins-amount">0</span>
     </div>
 
     <header class="site-header">
@@ -45,6 +45,31 @@
     </header>
 
     <script src="storage.js"></script>
-    <script>renderCoinBalance();</script>
+    <script>
+        renderCoinBalance();
+
+        // --- Hidden free starting coin ---
+        // Only shows up AFTER the player has visited the nursery (plant.html).
+        // Click it once to claim 1 coin; after that it disappears for good
+        // (rendered useless — the claimed flag stops it ever coming back).
+        const homeCoin = document.createElement('button');
+        homeCoin.type = 'button';
+        homeCoin.id = 'home-coin';
+        homeCoin.className = 'home-coin';
+        homeCoin.setAttribute('aria-label', 'a shiny coin');
+        document.body.appendChild(homeCoin);
+
+        function renderHomeCoin() {
+            homeCoin.hidden = !(hasVisitedPlant() && !isStartCoinClaimed());
+        }
+        renderHomeCoin();
+
+        homeCoin.addEventListener('click', () => {
+            if (claimStartCoin()) {
+                homeCoin.hidden = true;       // gone & useless now
+                renderCoinBalance();         // 0 -> 1 (hint disappears)
+            }
+        });
+    </script>
 </body>
 </html>

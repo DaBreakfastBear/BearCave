@@ -131,6 +131,23 @@ body {
     opacity: 0.85;
 }
 
+/* Nudge banner shown on the nursery page while broke & the free start
+   coin is still unclaimed (lives in the page body, not the top bar). */
+.broke-hint {
+    margin: 0.75rem auto 0;
+    max-width: 22rem;
+    padding: 0.6rem 1rem;
+    background: #fff8d6;
+    border: 2px solid #d9a800;
+    border-radius: 999px;
+    color: #7a5b00;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+.broke-hint[hidden] { display: none !important; }
+
 /* Row of three labeled screenshots */
 .nursery-row {
     display: flex;
@@ -325,6 +342,21 @@ body {
     font-weight: 800;
     min-width: 1ch;
     text-align: right;
+}
+
+/* When broke & the free start coin is still out there, swap the bar into
+   "hint" mode: hide the coin icon + label and just show the nudge text. */
+.coins-bar--hint {
+    background: #fff8d6;
+    border-color: #d9a800;
+}
+.coins-bar--hint .coins-coin,
+.coins-bar--hint .coins-label { display: none; }
+.coins-bar--hint .coins-amount {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-align: left;
 }
 
 /* Divider between coins & water in the top bar */
@@ -1052,6 +1084,18 @@ body {
     margin: 2rem auto 0;
 }
 
+/* Group header inside the long achievements list */
+.ach-group {
+    grid-column: 1 / -1;
+    margin: 1.25rem 0 0.25rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--dark-blue);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+.ach-group:first-child { margin-top: 0; }
+
 .ach-card {
     display: flex;
     align-items: center;
@@ -1125,6 +1169,32 @@ body {
     box-shadow: 0 0 0 2px #ffd84d;
 }
 body.fert-armed .plot:not(.grown) { cursor: crosshair; }
+
+/* ===== Hidden free "starting" coin on the home page =====
+   A small yellow circle that only appears after the player has visited
+   the nursery (plant.html). Clicking it grants 1 coin, once. */
+.home-coin {
+    position: fixed;
+    left: 7%;
+    bottom: 13%;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 2px solid #b8860b;
+    border-radius: 50%;
+    background: #f4c542;
+    cursor: pointer;
+    z-index: 11;
+    box-shadow: 0 0 0 4px rgba(244, 197, 66, 0.25);
+    animation: homeCoinPulse 2s ease-in-out infinite;
+    transition: transform 0.15s ease;
+}
+.home-coin:hover { transform: scale(1.18); }
+.home-coin[hidden] { display: none !important; }
+@keyframes homeCoinPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(244, 197, 66, 0.25); }
+    50%      { box-shadow: 0 0 0 10px rgba(244, 197, 66, 0.10); }
+}
 
 /* ===== Achievements tab bar ===== */
 .ach-tabs {

@@ -21,7 +21,7 @@
     <div class="coins-bar">
         <span class="coins-coin" aria-hidden="true"></span>
         <span class="coins-label">coins:</span>
-        <span id="coin-balance" class="coins-amount">1</span>
+        <span id="coin-balance" class="coins-amount">0</span>
     </div>
 
     <header class="site-header nursery-header">
@@ -29,9 +29,7 @@
         <p class="nursery-welcome">milestones from your bear cave journey.</p>
         <p class="ach-summary" id="ach-summary"></p>
 
-        <!-- Tab bar -->
-        <nav class="ach-tabs" id="ach-tabs"></nav>
-
+        <!-- One long list of every achievement, grouped by category -->
         <div class="ach-grid" id="ach-grid"></div>
     </header>
 
@@ -137,22 +135,11 @@
         ];
 
         // =====================================================================
-        //  Tab setup — you usually don't need to edit below here.
+        //  Long-list render — every achievement in one scrolling list,
+        //  grouped by category (no separate tabs).
         // =====================================================================
-        const TABS = [
-            { id: 'planting',   label: '🌱 planting',   icon: '' },
-            { id: 'watering',   label: '💧 watering',   icon: '' },
-            { id: 'fertilizer', label: '🪴 fertilizer',  icon: '' },
-            { id: 'market',     label: '🌾 market',      icon: '' },
-            { id: 'pests',      label: '🐜 pests',       icon: '' },
-            { id: 'wealth',      label: '🪙 wealth',      icon: '' },
-            { id: 'reset',       label: '✨ reset',       icon: '' }
-        ];
-
         const grid    = document.getElementById('ach-grid');
         const summary = document.getElementById('ach-summary');
-        const tabsEl  = document.getElementById('ach-tabs');
-        let activeTab = 'planting';
 
         // Build the planting items from WORDING.
         function plantingItems() {
@@ -174,52 +161,49 @@
             return out;
         }
 
-        function itemsFor(id) {
-            if (id === 'planting')   return plantingItems();
-            if (id === 'watering')   return WATERING_ACH;
-            if (id === 'fertilizer') return FERT_ACH;
-            if (id === 'market')     return MARKET_ACH;
-            if (id === 'pests')      return PESTS_ACH;
-            if (id === 'wealth')     return WEALTH_ACH;
-            if (id === 'reset')      return RESET_ACH;
-            return [];
+        // Each group: { label, items }
+        const GROUPS = [
+            { label: '🌱 planting',   items: plantingItems()  },
+            { label: '💧 watering',   items: WATERING_ACH     },
+            { label: '🪴 fertilizer',  items: FERT_ACH         },
+            { label: '🌾 market',      items: MARKET_ACH       },
+            { label: '🐜 pests',       items: PESTS_ACH        },
+            { label: '🪙 wealth',      items: WEALTH_ACH       },
+            { label: '✨ reset',       items: RESET_ACH        }
+        ];
+
+        function makeCard(a) {
+            const card = document.createElement('article');
+            card.className = 'ach-card ' + (a.done ? 'ach-card--unlocked' : 'ach-card--locked');
+            card.innerHTML =
+                '<div class="ach-icon">' + a.icon + '</div>' +
+                '<div class="ach-body">' +
+                    '<h3>' + a.title + '</h3>' +
+                    '<p>' + a.desc + '</p>' +
+                    '<p class="ach-progress">' + a.current + ' / ' + a.goal + '</p>' +
+                '</div>' +
+                '<span class="ach-status">' + (a.done ? '✓' : '🔒') + '</span>';
+            return card;
         }
 
         function render() {
-            const items = itemsFor(activeTab);
             grid.innerHTML = '';
             let unlocked = 0;
-            items.forEach(a => {
-                if (a.done) unlocked++;
-                const card = document.createElement('article');
-                card.className = 'ach-card ' + (a.done ? 'ach-card--unlocked' : 'ach-card--locked');
-                card.innerHTML =
-                    '<div class="ach-icon">' + a.icon + '</div>' +
-                    '<div class="ach-body">' +
-                        '<h3>' + a.title + '</h3>' +
-                        '<p>' + a.desc + '</p>' +
-                        '<p class="ach-progress">' + a.current + ' / ' + a.goal + '</p>' +
-                    '</div>' +
-                    '<span class="ach-status">' + (a.done ? '✓' : '🔒') + '</span>';
-                grid.appendChild(card);
+            let total    = 0;
+            GROUPS.forEach(group => {
+                // group header — full width across the grid
+                const head = document.createElement('h2');
+                head.className = 'ach-group';
+                head.textContent = group.label;
+                grid.appendChild(head);
+                group.items.forEach(a => {
+                    if (a.done) unlocked++;
+                    total++;
+                    grid.appendChild(makeCard(a));
+                });
             });
-            summary.textContent = unlocked + ' / ' + items.length + ' unlocked';
+            summary.textContent = unlocked + ' / ' + total + ' unlocked';
         }
-
-        // Build tab buttons.
-        TABS.forEach(t => {
-            const b = document.createElement('button');
-            b.type = 'button';
-            b.className = 'ach-tab' + (t.id === activeTab ? ' ach-tab--active' : '');
-            b.textContent = t.label;
-            b.addEventListener('click', () => {
-                activeTab = t.id;
-                tabsEl.querySelectorAll('.ach-tab').forEach(x => x.classList.remove('ach-tab--active'));
-                b.classList.add('ach-tab--active');
-                render();
-            });
-            tabsEl.appendChild(b);
-        });
 
         render();
     </script>

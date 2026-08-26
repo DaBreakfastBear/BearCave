@@ -26,12 +26,15 @@
     <div class="coins-bar">
         <span class="coins-coin" aria-hidden="true"></span>
         <span class="coins-label">coins:</span>
-        <span id="coin-balance" class="coins-amount">1</span>
+        <span id="coin-balance" class="coins-amount">0</span>
     </div>
 
     <header class="site-header nursery-header">
         <h1 class="title">THE NURSERY<span id="ants-origin"></span></h1>
         <p class="nursery-welcome">welcome to the nursery!</p>
+
+        <!-- Nudge shown only while broke & the free start coin is unclaimed -->
+        <p id="broke-hint" class="broke-hint" hidden>0 coins? try looking somewhere else!</p>
 
         <!-- Three labeled screenshots — the watering can & pest control
              cards double as live supply readouts (replacing the caption). -->
@@ -91,12 +94,12 @@
             </div>
         </div>
 
-        <!-- Fertilizer — instantly finishes a growing plant (1 per use) -->
+        <!-- Fertilizer — cuts 5 min off a growing plant (1 per use) -->
         <div class="water-card" id="fert-card">
             <span class="water-icon" aria-hidden="true">🪴</span>
             <div class="water-card__body">
                 <h3>fertilizer</h3>
-                <p class="shop-cost">50 coins each</p>
+                <p class="shop-cost">50 coins each · −5 min per use</p>
                 <p class="shop-stock">you have: <span data-fert-display>0</span></p>
                 <button type="button" id="buy-fert-btn" class="buy-btn">buy 1 fertilizer</button>
                 <button type="button" id="use-fert-btn" class="buy-btn">use fertilizer on a plant</button>
@@ -192,9 +195,17 @@
         // ===== Persisted coins =====
         let coins = getCoins();
         const coinBalance = document.getElementById('coin-balance');
+        const coinBar = coinBalance.closest('.coins-bar');
+        // Landing on the nursery unlocks the hidden free coin on home.html.
+        markVisitedPlant();
         function renderCoins() {
             coinBalance.textContent = coins;
+            if (coinBar) coinBar.classList.remove('coins-bar--hint');
             setCoins(coins);
+            // The "broke" nudge lives in its own banner on this page,
+            // not in the top coins bar.
+            const hint = document.getElementById('broke-hint');
+            if (hint) hint.hidden = !(coins === 0 && !isStartCoinClaimed());
         }
 
         // ===== THE SHOP (seeds) =====
@@ -318,7 +329,9 @@
         });
         useFertBtn.addEventListener('click', () => { armFert(!fertArmed); });
 
-        // Apply fertilizer to a plot: instantly finish growing it.
+        // Apply fertilizer to a plot: knock 5 minutes off the remaining
+        // grow time (finishes early if there's less than 5 min left).
+        const FERT_REDUCTION_MS = 5 * 60 * 1000;   // 5 minutes
         function applyFertilizer(plot) {
             const idx = plot.dataset.index;
             const state = plotState[idx];
@@ -330,13 +343,21 @@
             setFertilizer(have - 1);
             addFertUsed(1);
             state.lastTouched = Date.now();
-            state.plantedAt = Date.now() - state.growMs - 1;   // fully grown now
-            state.pauseMs = null;
-            state.watered = true;
+            // If paused waiting for water, resume from the pause point first
+            // (counts as watered so it doesn't re-pause), then apply the cut.
+            if (state.pauseMs != null) {
+                state.plantedAt = Date.now() - (state.growMs - state.pauseMs);
+                state.pauseMs = null;
+                state.watered = true;
+            }
+            // Shift plantedAt forward → the plant acts as if 5 more min of
+            // growth already happened. Less than 5 min left → fully grown.
+            state.plantedAt += FERT_REDUCTION_MS;
             savePlots();
             renderFertilizer();
             updatePlot(plot);
             refreshAllStates();
+            flashPlot(plot, '🪴 −5 min!');
         }
 
         // ===== INVENTORY (persisted) =====

@@ -12,7 +12,7 @@ const BOOK_KEY  = 'bearcave_book_unlocked';
 // --- Coins ---
 function getCoins() {
     const n = parseInt(localStorage.getItem(COIN_KEY), 10);
-    return isNaN(n) ? 1 : n;            // start with 1 coin the very first time
+    return isNaN(n) ? 0 : n;            // start with 0 coins the very first time
 }
 function setCoins(n) {
     localStorage.setItem(COIN_KEY, String(Math.max(0, Math.floor(n))));
@@ -106,10 +106,37 @@ function addReset() {
     saveLifetime(o);
 }
 
+// --- Visited the nursery / claimed the free starting coin ---
+// A hidden yellow coin appears on the home page only after the player
+// has visited plant.html. Clicking it grants 1 coin, once, then it's
+// gone forever (until a reset wipes the flags).
+const VISITED_PLANT_KEY    = 'bearcave_visited_plant';
+const START_COIN_CLAIM_KEY = 'bearcave_start_coin_claimed';
+function hasVisitedPlant()    { return localStorage.getItem(VISITED_PLANT_KEY) === '1'; }
+function markVisitedPlant()   { localStorage.setItem(VISITED_PLANT_KEY, '1'); }
+function isStartCoinClaimed() { return localStorage.getItem(START_COIN_CLAIM_KEY) === '1'; }
+function claimStartCoin() {
+    if (isStartCoinClaimed()) return false;   // already claimed — useless now
+    localStorage.setItem(START_COIN_CLAIM_KEY, '1');
+    addCoins(1);                              // grants the 1 starting coin
+    return true;
+}
+
 // --- Helper: refresh every #coin-balance on the page ---
+// When the player is broke (0 coins) and hasn't found the free starting
+// coin yet, the bar shows a hint nudging them to look for it.
 function renderCoinBalance() {
     const el = document.getElementById('coin-balance');
-    if (el) el.textContent = getCoins();
+    if (!el) return;
+    const n = getCoins();
+    const bar = el.closest('.coins-bar');
+    if (n === 0 && !isStartCoinClaimed()) {
+        el.textContent = '0 coins? try looking somewhere else!';
+        if (bar) bar.classList.add('coins-bar--hint');
+    } else {
+        el.textContent = n;
+        if (bar) bar.classList.remove('coins-bar--hint');
+    }
 }
 
 // --- Helper: refresh water displays (only present on the nursery page) ---
