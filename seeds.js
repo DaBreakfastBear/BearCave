@@ -59,6 +59,25 @@ const SEEDS = {
 const SEED_KEYS = Object.keys(SEEDS);
 
 // ====================================================================
+//  POT TIERS — each seed has a `type` that matches one of these tiers.
+//  When you click an empty plot you first pick a POT TIER, then you pick
+//  which seed of that tier to plant. A pot tier only shows up if you own
+//  at least one seed of that tier.
+//  (tree pot is reserved for later — marked `soon` so it never appears
+//   until tree seeds exist.)
+// ====================================================================
+const POT_TIERS = {
+    normal:    { label: 'normal pot',    color: '#8a5a3b', order: 1 },
+    fancy:     { label: 'fancy pot',     color: '#9b59b6', order: 2 },
+    rare:      { label: 'rare pot',      color: '#3b82c4', order: 3 },
+    legendary: { label: 'legendary pot', color: '#e0a526', order: 4 },
+    tree:      { label: 'tree pot',      color: '#4caf50', order: 5, soon: true }
+};
+const POT_TIER_KEYS = Object.keys(POT_TIERS).sort(
+    (a, b) => POT_TIERS[a].order - POT_TIERS[b].order
+);
+
+// ====================================================================
 //  Per-crop art (transparent PNGs), shared by plant.html & achievements.html.
 //  Crops without custom art fall back to the generic sprout / grown imgs.
 //  Achievement tier icons (per crop):

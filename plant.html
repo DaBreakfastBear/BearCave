@@ -125,18 +125,22 @@
         </div>
     </section>
 
-    <!-- ===== Seed picker modal (for planting in a plot) ===== -->
+    <!-- ===== Pot/seed picker modal (for planting in a plot) ===== -->
     <div id="seed-picker" class="picker-modal" aria-hidden="true">
         <div class="picker-card">
-            <h3>plant a seed</h3>
+            <h3 id="picker-title">plant a seed</h3>
             <div id="picker-options" class="picker-options"></div>
-            <button type="button" id="picker-cancel" class="picker-cancel">cancel</button>
+            <div class="picker-actions">
+                <button type="button" id="picker-back" class="picker-cancel" hidden>← back to pots</button>
+                <button type="button" id="picker-cancel" class="picker-cancel">cancel</button>
+            </div>
         </div>
     </div>
 
     <script src="storage.js"></script>
     <script src="seeds.js"></script>
     <script src="achievements.js"></script>
+    <script src="trail.js"></script>
     <script>
         // Generate glowing dots in each column
         function makeDots(column, count) {
@@ -419,8 +423,11 @@
         const plotGrid     = document.getElementById('plot-grid');
         const picker       = document.getElementById('seed-picker');
         const pickerOpts   = document.getElementById('picker-options');
+        const pickerTitle  = document.getElementById('picker-title');
+        const pickerBack   = document.getElementById('picker-back');
         const pickerCancel = document.getElementById('picker-cancel');
         let activePlot = null;
+        let pickerTier = null;          // currently chosen pot tier (null = pot stage)
         // plotState[idx] = { type, plantedAt, growMs, pauseMs }
         let plotState = loadJSON(PLOTS_KEY, {});
         const savePlots = () => saveJSON(PLOTS_KEY, plotState);
@@ -451,14 +458,63 @@
             return m + ':' + String(r).padStart(2, '0');
         }
 
-        function openPicker(plot) {
+        // Which pot tiers can the player use right now? A tier shows up only
+        // if the player owns at least one seed of that tier. (A seed's tier
+        // is its `type` field — normal, fancy, rare, legendary, tree.)
+        function availableTiers() {
+            const owned = new Set();
+            Object.keys(inventory).forEach(type => {
+                if (inventory[type] > 0) owned.add(SEEDS[type].type);
+            });
+            return POT_TIER_KEYS.filter(k => owned.has(k) && !POT_TIERS[k].soon);
+        }
+
+        // Stage 1 — pick a pot tier.
+        function openPotPicker(plot) {
             activePlot = plot;
-            const available = Object.keys(inventory).filter(t => inventory[t] > 0);
+            pickerTier = null;
+            pickerBack.hidden = true;
+            pickerTitle.textContent = 'choose a pot';
+            const tiers = availableTiers();
             pickerOpts.innerHTML = '';
-            if (available.length === 0) {
+            if (tiers.length === 0) {
                 pickerOpts.innerHTML = '<p class="inventory-empty">you have no seeds to plant. visit the shop!</p>';
             } else {
-                available.forEach(type => {
+                tiers.forEach(tier => {
+                    const t = POT_TIERS[tier];
+                    const owned = Object.keys(inventory)
+                        .filter(k => inventory[k] > 0 && SEEDS[k].type === tier)
+                        .reduce((n, k) => n + inventory[k], 0);
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'picker-option pot-option';
+                    btn.style.setProperty('--tier-color', t.color);
+                    btn.innerHTML = `
+                        <span class="pot-badge" style="background:${t.color}"></span>
+                        <img src="${EMPTY_IMG}" alt="${t.label}">
+                        <span class="picker-name">${t.label} <small>×${owned}</small></span>
+                    `;
+                    btn.addEventListener('click', () => openSeedPicker(plot, tier));
+                    pickerOpts.appendChild(btn);
+                });
+            }
+            picker.setAttribute('aria-hidden', 'false');
+            picker.classList.add('open');
+        }
+
+        // Stage 2 — pick which seed of the chosen tier to plant.
+        function openSeedPicker(plot, tier) {
+            activePlot = plot;
+            pickerTier = tier;
+            pickerBack.hidden = false;
+            pickerTitle.textContent = POT_TIERS[tier].label + ' — choose a seed';
+            const seeds = Object.keys(inventory)
+                .filter(k => inventory[k] > 0 && SEEDS[k].type === tier);
+            pickerOpts.innerHTML = '';
+            if (seeds.length === 0) {
+                pickerOpts.innerHTML = '<p class="inventory-empty">no ' + POT_TIERS[tier].label.replace(' pot', '') + ' seeds left!</p>';
+            } else {
+                seeds.forEach(type => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'picker-option inv-card--' + type;
@@ -470,12 +526,11 @@
                     pickerOpts.appendChild(btn);
                 });
             }
-            picker.setAttribute('aria-hidden', 'false');
-            picker.classList.add('open');
         }
 
         function closePicker() {
             activePlot = null;
+            pickerTier = null;
             picker.setAttribute('aria-hidden', 'true');
             picker.classList.remove('open');
         }
@@ -819,7 +874,7 @@
                 const idx = plot.dataset.index;
                 const state = plotState[idx];
                 if (!state) {
-                    openPicker(plot);                       // empty plot
+                    openPotPicker(plot);                       // empty plot
                     return;
                 }
                 if (state.ants) {
@@ -963,6 +1018,7 @@
         }, 2000);
 
         pickerCancel.addEventListener('click', closePicker);
+        pickerBack.addEventListener('click', () => { if (activePlot) openPotPicker(activePlot); });
         picker.addEventListener('click', e => { if (e.target === picker) closePicker(); });
 
         // tick all plots every second

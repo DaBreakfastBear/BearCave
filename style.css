@@ -700,6 +700,49 @@ body {
 
 .picker-cancel:hover { background: var(--dark-blue); color: var(--white); }
 
+/* ===== Sparkle mouse trail (shared site-wide via trail.js) ===== */
+.sparkle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+    box-shadow: 0 0 6px 1px var(--sc, #b18cff);
+    animation: sparkleAnim 0.9s ease-out forwards;
+    will-change: transform, opacity;
+}
+@keyframes sparkleAnim {
+    0%   { transform: scale(0.2) rotate(0deg);   opacity: 0; }
+    18%  { transform: scale(1)   rotate(40deg);   opacity: 1; }
+    100% { transform: scale(1.5) translateY(16px) rotate(160deg); opacity: 0; }
+}
+
+/* Two action buttons (back to pots / cancel) sit side by side */
+.picker-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+/* Pot-tier choice buttons (stage 1 of the picker). They reuse the empty
+   pot art with a colored badge so each tier is easy to tell apart even
+   though we don't have per-tier pot art yet. */
+.pot-option {
+    position: relative;
+}
+
+.pot-badge {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.45rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--light-blue), 0 1px 3px rgba(0,0,0,0.35);
+}
+
+.pot-option:hover { box-shadow: 0 0 0 3px var(--tier-color, var(--dark-blue)); border-radius: 12px; }
+
 /* Vertical columns of falling glowing dots on the left & right edges */
 .snow-column {
     position: fixed;

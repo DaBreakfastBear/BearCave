@@ -89,22 +89,6 @@
             background: conic-gradient(#ff4b4b, #ff9a3c, #ffd24a, #3ccb4f, #3a9bff, #9a6bff, #ff4b4b);
             font-size: 0;
         }
-
-        /* ===== Sparkle mouse trail ===== */
-        .sparkle {
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
-            box-shadow: 0 0 6px 1px var(--sc, #b18cff);
-            animation: sparkleAnim 0.9s ease-out forwards;
-            will-change: transform, opacity;
-        }
-        @keyframes sparkleAnim {
-            0%   { transform: scale(0.2) rotate(0deg);   opacity: 0; }
-            18%  { transform: scale(1)   rotate(40deg);   opacity: 1; }
-            100% { transform: scale(1.5) translateY(16px) rotate(160deg); opacity: 0; }
-        }
     </style>
 </head>
 <body class="fountain-page">
@@ -145,44 +129,12 @@
     <script src="storage.js"></script>
     <script src="seeds.js"></script>
     <script src="achievements.js"></script>
+    <script src="trail.js"></script>
     <script>
         renderCoinBalance();
 
-        /* ===== Sparkle mouse trail (default purple, saved color) ===== */
-        const TRAIL_KEY = 'bearcave_trail_color';
-        let trailColor = localStorage.getItem(TRAIL_KEY) || '#b18cff';   // 'rainbow' = random per sparkle
-
-        function colorForSparkle() {
-            if (trailColor === 'rainbow') return `hsl(${Math.floor(Math.random()*360)} 90% 70%)`;
-            return trailColor;
-        }
-
-        function spawnSparkle(x, y) {
-            const s = document.createElement('div');
-            s.className = 'sparkle';
-            const size = 7 + Math.random() * 13;
-            s.style.left = (x + (Math.random() * 18 - 9)) + 'px';
-            s.style.top  = (y + (Math.random() * 18 - 9)) + 'px';
-            s.style.width = s.style.height = size + 'px';
-            const c = colorForSparkle();
-            s.style.background = c;
-            s.style.setProperty('--sc', c);
-            document.body.appendChild(s);
-            setTimeout(() => s.remove(), 900);
-        }
-
-        let lastMove = 0;
-        document.addEventListener('mousemove', (e) => {
-            const now = performance.now();
-            if (now - lastMove < 16) return;   // ~one sparkle per frame
-            lastMove = now;
-            spawnSparkle(e.clientX, e.clientY);
-        });
-        // also work for touch drag
-        document.addEventListener('touchmove', (e) => {
-            const t = e.touches[0];
-            if (t) spawnSparkle(t.clientX, t.clientY);
-        }, { passive: true });
+        /* The sparkle trail itself now lives in trail.js (shared site-wide).
+           This page just hosts the rainbow picker that changes its color. */
 
         /* ===== Rainbow: click to toggle the color palette ===== */
         const rainbowBtn = document.getElementById('rainbow-btn');
@@ -190,7 +142,8 @@
         const swatches   = palette.querySelectorAll('.swatch');
 
         function setActiveSwatch() {
-            swatches.forEach(s => s.classList.toggle('active', s.dataset.color === trailColor));
+            const current = getTrailColor();
+            swatches.forEach(s => s.classList.toggle('active', s.dataset.color === current));
         }
 
         rainbowBtn.addEventListener('click', () => {
@@ -199,8 +152,7 @@
         });
 
         swatches.forEach(s => s.addEventListener('click', () => {
-            trailColor = s.dataset.color;
-            localStorage.setItem(TRAIL_KEY, trailColor);
+            setTrailColor(s.dataset.color);
             setActiveSwatch();
             // a little burst so you immediately see the new color
             const r = rainbowBtn.getBoundingClientRect();
