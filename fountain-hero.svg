@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <rect width="600" height="600" rx="28" fill="#cfe8ff"/>
+  <g fill="none" stroke="#1b4965" stroke-width="10" stroke-linecap="round">
+    <!-- water arcs -->
+    <path d="M300 200 C260 150 260 110 300 70" opacity="0.6"/>
+    <path d="M300 200 C340 150 340 110 300 70" opacity="0.6"/>
+    <path d="M300 220 C230 170 230 110 300 60" opacity="0.45"/>
+    <path d="M300 220 C370 170 370 110 300 60" opacity="0.45"/>
+  </g>
+  <!-- fountain basin -->
+  <ellipse cx="300" cy="430" rx="150" ry="40" fill="#9ec9ef"/>
+  <path d="M150 430 v30 a150 40 0 0 0 300 0 v-30" fill="#6aa9d6"/>
+  <rect x="285" y="200" width="30" height="230" rx="14" fill="#6aa9d6"/>
+  <ellipse cx="300" cy="200" rx="40" ry="16" fill="#9ec9ef"/>
+  <text x="300" y="540" text-anchor="middle" font-family="Lexend, sans-serif"
+        font-size="26" font-weight="800" fill="#1b4965" opacity="0.6">
+    ★ giant image — replace me ★
+  </text>
+</svg>

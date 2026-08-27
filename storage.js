@@ -66,6 +66,21 @@ function addPlanted(type, n = 1) {
     saveJSON(PLANTED_KEY, o);
     return o[type];
 }
+// Total seeds planted across every crop (for the "first seed planted" achievement).
+function totalPlanted() {
+    return Object.values(getPlanted()).reduce((s, n) => s + n, 0);
+}
+
+// --- Lifetime harvest counts (per crop) ---
+const HARVEST_KEY = 'bearcave_harvest_lifetime';
+function getHarvested() { return loadJSON(HARVEST_KEY, {}); }
+function harvestedCount(type) { return getHarvested()[type] || 0; }
+function addHarvested(type, n = 1) {
+    const o = getHarvested();
+    o[type] = (o[type] || 0) + n;
+    saveJSON(HARVEST_KEY, o);
+    return o[type];
+}
 
 // --- Watering actions (lifetime, wiped on reset) ---
 const WATERED_KEY = 'bearcave_watered';

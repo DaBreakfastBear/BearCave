@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Fountain · Bear Cave</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== Fountain page: deep-blue watery theme ===== */
+        body.fountain-page {
+            background:
+                radial-gradient(circle at 50% 18%, #5b9bd6 0%, transparent 55%),
+                linear-gradient(180deg, #2a6fb0 0%, #1b4965 55%, #0f2c45 100%);
+            color: #eaf4ff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4.5rem 1.5rem 3rem;
+            gap: 1.6rem;
+        }
+        body.fountain-page .corner-logo__circle { box-shadow: 0 0 0 2px #eaf4ff; }
+        body.fountain-page .coins-bar { background: rgba(15,44,69,0.55); color: #eaf4ff; }
+
+        .fountain-title {
+            font-weight: 900;
+            font-size: clamp(2.4rem, 9vw, 5rem);
+            letter-spacing: 0.06em;
+            text-shadow: 0 4px 18px rgba(0,0,0,0.35);
+            text-align: center;
+            line-height: 1;
+        }
+        .fountain-sub {
+            font-size: clamp(0.95rem, 3vw, 1.15rem);
+            opacity: 0.85;
+            text-align: center;
+            margin-top: -0.4rem;
+        }
+
+        /* ===== Giant hero image (replace the src tomorrow) ===== */
+        .fountain-hero {
+            width: min(60vmin, 460px);
+            height: auto;
+            border-radius: 24px;
+            filter: drop-shadow(0 12px 30px rgba(0,0,0,0.4));
+        }
+
+        /* ===== Rainbow: click to open the trail-color palette ===== */
+        .rainbow-btn {
+            width: min(46vw, 220px);
+            height: auto;
+            cursor: pointer;
+            filter: drop-shadow(0 6px 16px rgba(0,0,0,0.35));
+            transition: transform 0.15s ease, filter 0.15s ease;
+            user-select: none;
+        }
+        .rainbow-btn:hover { transform: translateY(-4px) scale(1.03); }
+        .rainbow-btn:active { transform: scale(0.96); }
+
+        .trail-prompt { font-size: 0.9rem; opacity: 0.8; text-align: center; }
+
+        /* ===== Color palette (pops down from the rainbow) ===== */
+        .trail-palette {
+            display: none;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            padding: 1rem 1.2rem;
+            background: rgba(15,44,69,0.6);
+            border: 2px solid rgba(234,244,255,0.25);
+            border-radius: 18px;
+            max-width: 90vw;
+        }
+        .trail-palette.open { display: flex; }
+        .swatch {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            border: 3px solid rgba(234,244,255,0.4);
+            cursor: pointer;
+            transition: transform 0.12s ease, border-color 0.12s ease;
+        }
+        .swatch:hover { transform: scale(1.15); }
+        .swatch.active { border-color: #fff; transform: scale(1.18); }
+        .swatch--rainbow {
+            background: conic-gradient(#ff4b4b, #ff9a3c, #ffd24a, #3ccb4f, #3a9bff, #9a6bff, #ff4b4b);
+            font-size: 0;
+        }
+
+        /* ===== Sparkle mouse trail ===== */
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+            box-shadow: 0 0 6px 1px var(--sc, #b18cff);
+            animation: sparkleAnim 0.9s ease-out forwards;
+            will-change: transform, opacity;
+        }
+        @keyframes sparkleAnim {
+            0%   { transform: scale(0.2) rotate(0deg);   opacity: 0; }
+            18%  { transform: scale(1)   rotate(40deg);   opacity: 1; }
+            100% { transform: scale(1.5) translateY(16px) rotate(160deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="fountain-page">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">0</span>
+    </div>
+
+    <h1 class="fountain-title">THE FOUNTAIN</h1>
+    <p class="fountain-sub">wiggle your mouse for sparkles ✨ &nbsp;·&nbsp; click the rainbow to change their color!</p>
+
+    <!-- Giant image (swap the src tomorrow with whatever you like) -->
+    <img class="fountain-hero" id="fountain-hero" src="fountain-hero.svg" alt="a giant fountain image">
+
+    <!-- Click the rainbow to open the trail-color palette -->
+    <img class="rainbow-btn" id="rainbow-btn" src="rainbow.svg" alt="rainbow — pick your sparkle color" title="pick a sparkle color">
+    <p class="trail-prompt">click the rainbow ↑</p>
+
+    <div class="trail-palette" id="trail-palette">
+        <button class="swatch" data-color="#b18cff" style="background:#b18cff" title="purple" aria-label="purple"></button>
+        <button class="swatch" data-color="#6aa9ff" style="background:#6aa9ff" title="blue" aria-label="blue"></button>
+        <button class="swatch" data-color="#ff8fd1" style="background:#ff8fd1" title="pink" aria-label="pink"></button>
+        <button class="swatch" data-color="#ffd24a" style="background:#ffd24a" title="gold" aria-label="gold"></button>
+        <button class="swatch" data-color="#6df0a8" style="background:#6df0a8" title="green" aria-label="green"></button>
+        <button class="swatch" data-color="#ff6b6b" style="background:#ff6b6b" title="red" aria-label="red"></button>
+        <button class="swatch" data-color="#ffffff" style="background:#ffffff" title="white" aria-label="white"></button>
+        <button class="swatch swatch--rainbow" data-color="rainbow" title="rainbow sparkles" aria-label="rainbow"></button>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script src="achievements.js"></script>
+    <script>
+        renderCoinBalance();
+
+        /* ===== Sparkle mouse trail (default purple, saved color) ===== */
+        const TRAIL_KEY = 'bearcave_trail_color';
+        let trailColor = localStorage.getItem(TRAIL_KEY) || '#b18cff';   // 'rainbow' = random per sparkle
+
+        function colorForSparkle() {
+            if (trailColor === 'rainbow') return `hsl(${Math.floor(Math.random()*360)} 90% 70%)`;
+            return trailColor;
+        }
+
+        function spawnSparkle(x, y) {
+            const s = document.createElement('div');
+            s.className = 'sparkle';
+            const size = 7 + Math.random() * 13;
+            s.style.left = (x + (Math.random() * 18 - 9)) + 'px';
+            s.style.top  = (y + (Math.random() * 18 - 9)) + 'px';
+            s.style.width = s.style.height = size + 'px';
+            const c = colorForSparkle();
+            s.style.background = c;
+            s.style.setProperty('--sc', c);
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 900);
+        }
+
+        let lastMove = 0;
+        document.addEventListener('mousemove', (e) => {
+            const now = performance.now();
+            if (now - lastMove < 16) return;   // ~one sparkle per frame
+            lastMove = now;
+            spawnSparkle(e.clientX, e.clientY);
+        });
+        // also work for touch drag
+        document.addEventListener('touchmove', (e) => {
+            const t = e.touches[0];
+            if (t) spawnSparkle(t.clientX, t.clientY);
+        }, { passive: true });
+
+        /* ===== Rainbow: click to toggle the color palette ===== */
+        const rainbowBtn = document.getElementById('rainbow-btn');
+        const palette   = document.getElementById('trail-palette');
+        const swatches   = palette.querySelectorAll('.swatch');
+
+        function setActiveSwatch() {
+            swatches.forEach(s => s.classList.toggle('active', s.dataset.color === trailColor));
+        }
+
+        rainbowBtn.addEventListener('click', () => {
+            palette.classList.toggle('open');
+            if (palette.classList.contains('open')) setActiveSwatch();
+        });
+
+        swatches.forEach(s => s.addEventListener('click', () => {
+            trailColor = s.dataset.color;
+            localStorage.setItem(TRAIL_KEY, trailColor);
+            setActiveSwatch();
+            // a little burst so you immediately see the new color
+            const r = rainbowBtn.getBoundingClientRect();
+            for (let i = 0; i < 10; i++) {
+                spawnSparkle(r.left + r.width / 2, r.top + r.height / 2);
+            }
+        }));
+
+        setActiveSwatch();
+    </script>
+</body>
+</html>

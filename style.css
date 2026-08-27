@@ -1208,6 +1208,8 @@ body {
     transform: translateY(-24px);
     transition: opacity 0.3s ease, transform 0.3s ease;
     max-width: 90vw;
+    cursor: pointer;
+    pointer-events: auto;
 }
 .ach-toast--show { opacity: 1; transform: translateY(0); }
 .ach-toast__icon {

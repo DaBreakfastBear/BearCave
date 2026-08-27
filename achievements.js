@@ -9,36 +9,38 @@
 // ====================================================================
 
 // ---- 🌱 PLANTING wording (per crop, 4 tiers each) ----
+// Per-crop tiers are HARVEST-based now (you must harvest the crop, not
+// just plant it). "first seed planted" (below) is the only plant-based one.
 const ACH_WORDING = {
     potato: {
-        1:   { title: 'first potato',                      desc: 'plant your first potato.' },
-        5:   { title: 'potatopotatopotatopotatopotato',     desc: 'plant 5 potatoes.' },
-        20:  { title: 'potato x20',                         desc: 'plant 20 potatoes.' },
-        100: { title: 'potato x100',                        desc: 'plant 100 potatoes.' }
+        1:   { title: 'first potato',                      desc: 'harvest your first potato.' },
+        5:   { title: 'potatopotatopotatopotatopotato',     desc: 'harvest 5 potatoes.' },
+        20:  { title: 'potato x20',                         desc: 'harvest 20 potatoes.' },
+        100: { title: 'potato x100',                        desc: 'harvest 100 potatoes.' }
     },
     carrot: {
-        1:   { title: 'first carrot',   desc: 'plant your first carrot.' },
-        5:   { title: 'carrot ^ 5',      desc: 'plant 5 carrots.' },
-        20:  { title: 'carrot x20',     desc: 'plant 20 carrots.' },
-        100: { title: 'carrot x100',    desc: 'plant 100 carrots.' }
+        1:   { title: 'first carrot',   desc: 'harvest your first carrot.' },
+        5:   { title: 'carrot ^ 5',      desc: 'harvest 5 carrots.' },
+        20:  { title: 'carrot x20',     desc: 'harvest 20 carrots.' },
+        100: { title: 'carrot x100',    desc: 'harvest 100 carrots.' }
     },
     radish: {
-        1:   { title: 'first radish',  desc: 'plant your first radish.' },
-        5:   { title: 'radish x5',     desc: 'plant 5 radishes.' },
-        20:  { title: 'radish x20',    desc: 'plant 20 radishes.' },
-        100: { title: 'radish x100',   desc: 'plant 100 radishes.' }
+        1:   { title: 'first radish',  desc: 'harvest your first radish.' },
+        5:   { title: 'radish x5',     desc: 'harvest 5 radishes.' },
+        20:  { title: 'radish x20',    desc: 'harvest 20 radishes.' },
+        100: { title: 'radish x100',   desc: 'harvest 100 radishes.' }
     },
     cabbage: {
-        1:   { title: 'first cabbage', desc: 'plant your first cabbage.' },
-        5:   { title: 'cabbage x5',    desc: 'plant 5 cabbages.' },
-        20:  { title: 'cabbage x20',   desc: 'plant 20 cabbages.' },
-        100: { title: 'cabbage x100',  desc: 'plant 100 cabbages.' }
+        1:   { title: 'first cabbage', desc: 'harvest your first cabbage.' },
+        5:   { title: 'cabbage x5',    desc: 'harvest 5 cabbages.' },
+        20:  { title: 'cabbage x20',   desc: 'harvest 20 cabbages.' },
+        100: { title: 'cabbage x100',  desc: 'harvest 100 cabbages.' }
     },
     cauliflower: {
-        1:   { title: 'first cauliflower', desc: 'plant your first cauliflower.' },
-        5:   { title: 'cauliflower x5',   desc: 'plant 5 cauliflowers.' },
-        20:  { title: 'cauliflower x20',  desc: 'plant 20 cauliflowers.' },
-        100: { title: 'cauliflower x100', desc: 'plant 100 cauliflowers.' }
+        1:   { title: 'first cauliflower', desc: 'harvest your first cauliflower.' },
+        5:   { title: 'cauliflower x5',   desc: 'harvest 5 cauliflowers.' },
+        20:  { title: 'cauliflower x20',  desc: 'harvest 20 cauliflowers.' },
+        100: { title: 'cauliflower x100', desc: 'harvest 100 cauliflowers.' }
     }
 };
 const ACH_PLANT_TIERS = [1, 5, 20, 100];
@@ -56,10 +58,22 @@ function achItem(id, icon, title, desc, current, goal) {
     return { id, icon, title, desc, current: Math.min(current, goal), goal, done: current >= goal };
 }
 
+// "first seed planted" — plant any seed once (plant-based, total across crops).
+function firstSeedPlanted() {
+    return achItem(
+        'plant_firstseed',
+        '🌱',
+        'first seed planted',
+        'plant your first seed.',
+        totalPlanted(),
+        1
+    );
+}
+
 function plantingAchievements() {
     const out = [];
     SEED_KEYS.forEach(key => {
-        const count = plantedCount(key);
+        const count = harvestedCount(key);   // harvest-based now
         ACH_PLANT_TIERS.forEach(n => {
             const w = ACH_WORDING[key][n];
             out.push(achItem(
@@ -131,7 +145,7 @@ function resetAchievements() {
 // Each group: { label, items }
 function achGroups() {
     return [
-        { label: '🌱 planting',   items: plantingAchievements() },
+        { label: '🌱 planting',   items: [firstSeedPlanted(), ...plantingAchievements()] },
         { label: '💧 watering',   items: wateringAchievements() },
         { label: '🪴 fertilizer', items: fertAchievements()      },
         { label: '🌾 market',      items: marketAchievements()    },
@@ -149,6 +163,7 @@ function allAchievements() {
 
 // ====================================================================
 //  UNLOCK TOAST — a small card slides in from the top center, stays 3s.
+//  Click it to jump to the achievements page.
 // ====================================================================
 const ACH_SHOWN_KEY = 'bearcave_ach_shown';   // wiped on reset (re-earn re-toasts)
 const ACH_TOAST_MS  = 3000;
@@ -175,6 +190,8 @@ function toastAchievement(ach) {
             '<span>' + ach.title + '</span>' +
         '</div>';
     c.appendChild(t);
+    // Click the popup to jump straight to the achievements page.
+    t.addEventListener('click', () => { window.location.href = 'achievements.html'; });
     // trigger the enter transition on the next frame
     requestAnimationFrame(() => t.classList.add('ach-toast--show'));
     setTimeout(() => {

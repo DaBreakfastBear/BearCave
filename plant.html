@@ -847,6 +847,7 @@
             if (!state) return;
             stopAnts(idx);
             harvested[state.type] = (harvested[state.type] || 0) + 1;
+            addHarvested(state.type);          // lifetime harvest count (for achievements)
             delete plotState[idx];
             savePlots();
             saveHarvested();
@@ -854,6 +855,7 @@
             plot.querySelector('.plot-overlay').textContent = '';
             plot.classList.remove('planted', 'grown', 'growing', 'needs-water', 'paused', 'ants');
             renderMarket();
+            checkAchievements();
         }
 
         // ===== FARMERS MARKET — sell ALL crops at once =====
