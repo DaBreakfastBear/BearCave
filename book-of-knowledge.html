@@ -25,7 +25,7 @@
     </div>
 
     <header class="site-header nursery-header">
-        <a href="blogs.html" class="back-link">← back to blogs</a>
+        <a href="library.html" class="back-link">← back to library</a>
         <h1 class="title" style="font-size:clamp(2rem,8vw,5rem)">BOOK OF KNOWLEDGE</h1>
         <p class="nursery-welcome">everything you need to know about every seed.</p>
     </header>
@@ -43,6 +43,20 @@
 
     <!-- ===== The actual guide (revealed after paying) ===== -->
     <section class="book-section" id="book-section" hidden>
+        <!-- Cover of the highest book tier you've unlocked.
+             Book 1 -> book1.png, Book 2 -> book2.png, Book 3 -> book3.png,
+             Book ALL -> allplantbook.png. -->
+        <div class="book-cover-wrap">
+            <img id="book-cover" class="book-cover" src="book1.png" alt="Book 1">
+            <p id="book-tier-label" class="book-tier-label">Book 1</p>
+        </div>
+
+        <!-- Upgrade to the next book tier (hidden once you own Book ALL) -->
+        <div class="book-upgrade" id="book-upgrade">
+            <button type="button" id="upgrade-btn" class="sell-all-btn">unlock Book 2</button>
+            <p id="upgrade-note" class="pay-note"></p>
+        </div>
+
         <div id="book-grid" class="book-grid">
             <!-- book cards are generated from the SEEDS config in JS -->
         </div>
@@ -62,11 +76,80 @@
         const payNote   = document.getElementById('pay-note');
         const UNLOCK_COST = 10;
 
+        /* ===== Book tiers: covers + the upgrade path =====
+           Book 1 is the basic 10-coin guide. Higher tiers are cosmetic
+           cover upgrades bought on this page:
+             Book 1 -> Book 2   : 10,000 coins
+             Book 2 -> Book 3   : 500,000 coins
+             Book 3 -> Book ALL : 2,000,000 coins  (shown as "2M")
+           Each next-tier button only appears once the tier before it is
+           unlocked, and buying it swaps the cover to that book's art. */
+        const BOOK_COVERS = {
+            1: { img: 'book1.png',        label: 'Book 1' },
+            2: { img: 'book2.png',        label: 'Book 2' },
+            3: { img: 'book3.png',        label: 'Book 3' },
+            4: { img: 'allplantbook.png', label: 'Book All' }
+        };
+        const NEXT_TIER = {
+            1: { cost: 10000,    name: 'Book 2',   fn: unlockBook2 },
+            2: { cost: 500000,   name: 'Book 3',   fn: unlockBook3 },
+            3: { cost: 2000000,  name: 'Book All', fn: unlockBookAll }
+        };
+
+        const coverEl     = document.getElementById('book-cover');
+        const tierLabelEl = document.getElementById('book-tier-label');
+        const upgradeWrap = document.getElementById('book-upgrade');
+        const upgradeBtn  = document.getElementById('upgrade-btn');
+        const upgradeNote = document.getElementById('upgrade-note');
+
         function showBook() {
             paywall.hidden = true;
             bookSec.hidden = false;
-            bookGrid.innerHTML = SEED_KEYS.map(bookCardHTML).join('');
+            renderBook();
         }
+
+        // Paint the cover + tier label + the next-tier upgrade button.
+        function renderBook() {
+            bookGrid.innerHTML = SEED_KEYS.map(bookCardHTML).join('');
+            const tier = highestBookTier() || 1;   // we're past the paywall, so at least Book 1
+            const c = BOOK_COVERS[tier];
+            coverEl.src = c.img;
+            coverEl.alt = c.label;
+            tierLabelEl.textContent = c.label;
+            renderUpgrade();
+        }
+
+        function renderUpgrade() {
+            const tier = highestBookTier() || 1;
+            if (tier >= 4) {
+                upgradeBtn.hidden = true;
+                upgradeBtn.disabled = true;
+                upgradeNote.textContent = '✨ all books unlocked — complete collection!';
+                return;
+            }
+            const next = NEXT_TIER[tier];
+            const coins = getCoins();
+            upgradeBtn.hidden = false;
+            upgradeBtn.textContent = 'unlock ' + next.name + ' — ' + coinShort(next.cost) + ' coins';
+            if (coins >= next.cost) {
+                upgradeBtn.disabled = false;
+                upgradeNote.textContent = 'you have ' + coinText(coins) + '.';
+            } else {
+                upgradeBtn.disabled = true;
+                const need = next.cost - coins;
+                upgradeNote.textContent = 'you have ' + coinText(coins) + ' — earn ' + coinText(need) + ' more to unlock.';
+            }
+        }
+
+        upgradeBtn.addEventListener('click', () => {
+            const tier = highestBookTier() || 1;
+            const next = NEXT_TIER[tier];
+            if (!next || getCoins() < next.cost) return;
+            spendCoins(next.cost);
+            next.fn();
+            renderCoinBalance();   // refresh the top coin bar
+            renderBook();          // swap the cover + show the next button
+        });
 
         function updatePaywall() {
             const coins = getCoins();
@@ -85,7 +168,7 @@
         payBtn.addEventListener('click', () => {
             if (getCoins() < UNLOCK_COST) return;
             spendCoins(UNLOCK_COST);   // deduct 10 (persisted website-wide)
-            unlockBook();               // remember it's unlocked forever
+            unlockBook();               // remember Book 1 is unlocked forever
             renderCoinBalance();        // refresh the top coin bar
             showBook();
         });
@@ -96,6 +179,14 @@
         } else {
             updatePaywall();
         }
+
+        // Re-render when returning via the browser back button (bfcache
+        // restores the old DOM, so the coin balance / upgrade note could
+        // otherwise go stale if coins changed on another page).
+        window.addEventListener('pageshow', () => {
+            renderCoinBalance();
+            if (isBookUnlocked()) renderUpgrade(); else updatePaywall();
+        });
     </script>
 </body>
 </html>

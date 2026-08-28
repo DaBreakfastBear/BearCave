@@ -20,7 +20,7 @@ const SEEDS = {
         color: 'orange',
         img: 'seeds orange.png',
         cost: 5,
-        sell: 13,
+        sell: 10,
         type: 'normal',
         growSec: 7,
         water: 0.2
@@ -30,7 +30,7 @@ const SEEDS = {
         color: 'red',
         img: 'seeds red.png',
         cost: 30,
-        sell: 72,
+        sell: 55,
         type: 'normal',
         growSec: 13,
         water: 0.2
@@ -40,7 +40,7 @@ const SEEDS = {
         color: 'green',
         img: 'seeds green.png',
         cost: 100,
-        sell: 150,
+        sell: 140,
         type: 'normal',
         growSec: 17,
         water: 0.2
@@ -50,10 +50,30 @@ const SEEDS = {
         color: 'white',
         img: 'seeds white.png',
         cost: 250,
-        sell: 400,
+        sell: 350,
         type: 'normal',
         growSec: 22,
         water: 0.3
+    },
+    onion: {
+        name: 'onion',
+        color: 'white',
+        img: 'seeds white.png',
+        cost: 750,
+        sell: 900,
+        type: 'normal',
+        growSec: 22,
+        water: 0.3
+    },
+    tomato: {
+        name: 'tomato',
+        color: 'red',
+        img: 'seeds red.png',
+        cost: 1300,
+        sell: 1650,
+        type: 'normal',
+        growSec: 30,
+        water: 0.5
     }
 };
 const SEED_KEYS = Object.keys(SEEDS);
@@ -90,8 +110,10 @@ const EMPTY_IMG  = 'emptypot.png';
 const SPROUT_IMG = 'sprout.png';                  // generic seedling / fallback pot
 const GROWN_IMG  = 'Screenshot 2026-08-24 at 5.38.34 PM.png'; // generic grown fallback
 const CROP_IMGS  = {
-    potato: { planted: 'potatopot.png', grown: 'potatos.png', diseased: 'diseased potato.png' },
-    carrot: { planted: 'carrotpot.png', grown: 'carrot.png',  diseased: 'diseased carrot.png' }
+    potato:  { planted: 'potatopot.png',  grown: 'potatos.png',  diseased: 'diseased potato.png' },
+    carrot:  { planted: 'carrotpot.png',   grown: 'carrot.png',   diseased: 'diseased carrot.png' },
+    cabbage: { planted: 'cabbageplant.png', grown: 'cabbage.png', diseased: 'diseasedcabbage.png' },
+    radish:  { planted: 'radishplant.png',  grown: 'radish.png',   diseased: 'diseasedradish.png' }
 };
 const plantedImg  = t => { const c = CROP_IMGS[t]; return c && c.planted  ? c.planted  : SPROUT_IMG; };
 const grownImg    = t => { const c = CROP_IMGS[t]; return c && c.grown    ? c.grown    : GROWN_IMG;   };
@@ -99,6 +121,13 @@ const diseasedImg = t => { const c = CROP_IMGS[t]; return c && c.diseased ? c.di
 
 // helper used by the Book of Knowledge page
 function coinText(n) { return n === 1 ? '1 coin' : n + ' coins'; }
+
+// Compact coin formatting for big unlock prices (10K, 500K, 2M…).
+function coinShort(n) {
+    if (n >= 1e6) return (n % 1e6 === 0 ? (n / 1e6) : (n / 1e6).toFixed(1)) + 'M';
+    if (n >= 1e3) return (n % 1e3 === 0 ? (n / 1e3) : (n / 1e3).toFixed(1)) + 'K';
+    return '' + n;
+}
 
 function bookCardHTML(key) {
     const s = SEEDS[key];

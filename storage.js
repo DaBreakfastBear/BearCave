@@ -49,6 +49,29 @@ function addPestControl(n) { setPestControl(getPestControl() + n); }
 function isBookUnlocked() { return localStorage.getItem(BOOK_KEY) === '1'; }
 function unlockBook() { localStorage.setItem(BOOK_KEY, '1'); }
 
+// --- Higher Book of Knowledge tiers (Book 2, 3, ALL) ---
+// Book 1 is the basic 10-coin unlock above. These tiers are cosmetic cover
+// upgrades bought on the book page; the highest unlocked tier decides which
+// cover art is shown. All wiped by the reset sparkle (bearcave_ prefix).
+const BOOK2_KEY   = 'bearcave_book2_unlocked';
+const BOOK3_KEY   = 'bearcave_book3_unlocked';
+const BOOKALL_KEY = 'bearcave_bookall_unlocked';
+function isBook2Unlocked()   { return localStorage.getItem(BOOK2_KEY) === '1'; }
+function unlockBook2()       { localStorage.setItem(BOOK2_KEY, '1'); }
+function isBook3Unlocked()    { return localStorage.getItem(BOOK3_KEY) === '1'; }
+function unlockBook3()        { localStorage.setItem(BOOK3_KEY, '1'); }
+function isBookAllUnlocked()  { return localStorage.getItem(BOOKALL_KEY) === '1'; }
+function unlockBookAll()      { localStorage.setItem(BOOKALL_KEY, '1'); }
+
+// Highest book tier unlocked: 0 = none, 1 = Book 1, 2 = Book 2, 3 = Book 3, 4 = Book ALL.
+function highestBookTier() {
+    if (isBookAllUnlocked()) return 4;
+    if (isBook3Unlocked())  return 3;
+    if (isBook2Unlocked())  return 2;
+    if (isBookUnlocked())  return 1;
+    return 0;
+}
+
 // --- Generic JSON persistence (plots, inventory, harvested) ---
 function loadJSON(key, fallback) {
     try { const v = JSON.parse(localStorage.getItem(key)); return v ? v : fallback; }
@@ -103,6 +126,22 @@ function addFertUsed(n = 1) { saveJSON(FERT_USED_KEY, getFertUsed() + n); }
 const SOLD_KEY = 'bearcave_sold';
 function getSoldCount() { return loadJSON(SOLD_KEY, 0) || 0; }
 function addSold(n = 1) { saveJSON(SOLD_KEY, getSoldCount() + n); }
+
+// --- Kitchen (crops sent to the kitchen page counter) ---
+// Stored per-crop so future kitchen features can use the breakdown; the
+// counter on kitchen.html is the sum. Wiped by the reset sparkle.
+const KITCHEN_KEY = 'bearcave_kitchen';
+function getKitchen()   { return loadJSON(KITCHEN_KEY, {}); }
+function setKitchen(o)  { saveJSON(KITCHEN_KEY, o); }
+function addToKitchen(type, n = 1) {
+    const o = getKitchen();
+    o[type] = (o[type] || 0) + n;
+    setKitchen(o);
+    return o[type];
+}
+function kitchenTotal() {
+    return Object.values(getKitchen()).reduce((s, n) => s + n, 0);
+}
 
 // --- Ants cleared (lifetime) ---
 const ANTS_CLEARED_KEY = 'bearcave_ants_cleared';

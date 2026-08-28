@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Cave · Kitchen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="nursery-body">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">0</span>
+    </div>
+
+    <header class="site-header nursery-header">
+        <a href="plant.html" class="back-link">← back to the nursery</a>
+        <h1 class="title">KITCHEN</h1>
+        <p class="nursery-welcome">crops you send here from your inventory (press E).</p>
+
+        <!-- The counter (the only thing here for now) -->
+        <div class="kitchen-counter" id="kitchen-counter">
+            <span class="kitchen-counter__num" id="kitchen-num">0</span>
+            <span class="kitchen-counter__label">plants in the kitchen</span>
+        </div>
+
+        <!-- Per-crop breakdown -->
+        <div id="kitchen-grid" class="kitchen-grid">
+            <p class="inventory-empty">nothing here yet. send crops from your inventory!</p>
+        </div>
+    </header>
+
+    <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script src="achievements.js"></script>
+    <script src="trail.js"></script>
+    <script>
+        renderCoinBalance();
+
+        function renderKitchen() {
+            const k = getKitchen();
+            const total = kitchenTotal();
+            document.getElementById('kitchen-num').textContent = total;
+
+            const grid = document.getElementById('kitchen-grid');
+            const types = Object.keys(k).filter(t => k[t] > 0);
+            if (types.length === 0) {
+                grid.innerHTML = '<p class="inventory-empty">nothing here yet. send crops from your inventory!</p>';
+                return;
+            }
+            grid.innerHTML = '';
+            types.forEach(type => {
+                const card = document.createElement('article');
+                card.className = 'market-card inv-card--' + type;
+                card.innerHTML = `
+                    <img src="${grownImg(type)}" alt="${cropLabels[type]}">
+                    <h3>${cropLabels[type]}</h3>
+                    <p class="shop-stock">in the kitchen: <span class="stock-count">${k[type]}</span></p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        renderKitchen();
+
+        // Re-render when returning via the browser back button (bfcache
+        // restores the old DOM, so the counter could otherwise be stale).
+        window.addEventListener('pageshow', renderKitchen);
+    </script>
+</body>
+</html>

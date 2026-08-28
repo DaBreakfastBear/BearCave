@@ -107,23 +107,27 @@
         </div>
     </section>
 
-    <!-- ===== INVENTORY ===== -->
-    <section class="inventory-section">
-        <h2 class="shop-title">INVENTORY</h2>
-        <div id="inventory-grid" class="inventory-grid">
-            <p class="inventory-empty">your inventory is empty. buy some seeds!</p>
-        </div>
-    </section>
+    <!-- ===== Inventory popup (press E) — holds seeds & harvested crops ===== -->
+    <button type="button" id="open-inventory-btn" class="open-inv-btn" title="inventory (press E)" aria-label="Open inventory">🎒</button>
 
-    <!-- ===== THE FARMERS MARKET ===== -->
-    <section class="shop-section">
-        <h2 class="shop-title">THE FARMERS MARKET</h2>
-        <p class="nursery-welcome">harvest your grown plants, then sell them here for coins.</p>
-        <button type="button" id="sell-all-btn" class="sell-all-btn" disabled>no crops to sell</button>
-        <div id="market-grid" class="shop-grid">
-            <p class="inventory-empty">no crops yet. grow and harvest some plants!</p>
+    <div id="inv-popup" class="picker-modal" aria-hidden="true">
+        <div class="picker-card inv-popup-card">
+            <h3 id="inv-title">inventory</h3>
+
+            <!-- Stage 1: the 3×4 (12-slot) grid of seeds + harvested crops -->
+            <div id="inv-grid" class="inv-grid"></div>
+
+            <!-- Stage 2/3: item detail (choose destination, then quantity) -->
+            <div id="inv-detail" class="inv-detail" hidden></div>
+
+            <div class="picker-actions">
+                <button type="button" id="inv-back" class="picker-cancel" hidden>← back</button>
+                <a href="kitchen.html" class="picker-cancel kitchen-link">kitchen →</a>
+                <button type="button" id="inv-close" class="picker-cancel">close</button>
+            </div>
+            <p class="inv-hint">press <b>E</b> to open / close · click a crop to sell it or send it to the kitchen</p>
         </div>
-    </section>
+    </div>
 
     <!-- ===== Pot/seed picker modal (for planting in a plot) ===== -->
     <div id="seed-picker" class="picker-modal" aria-hidden="true">
@@ -194,7 +198,9 @@
             carrot:      () => Math.floor(Math.random() * 3) + 2,
             radish:      () => Math.floor(Math.random() * 3) + 1,
             cabbage:     () => Math.floor(Math.random() * 2) + 1,
-            cauliflower: () => Math.floor(Math.random() * 2)
+            cauliflower: () => Math.floor(Math.random() * 2),
+            onion:       () => Math.floor(Math.random() * 2),   // 0–1 (rare)
+            tomato:      () => Math.floor(Math.random() * 2)    // 0–1 (rarest)
         };
 
         // ===== Persisted coins =====
@@ -366,9 +372,12 @@
         }
 
         // ===== INVENTORY (persisted) =====
+        // Two stores live here:
+        //   `inventory`  — SEEDS you bought (used for planting via the pot picker)
+        //   `harvested`   — crops you harvested (the E-key inventory popup)
+        // Both are shown together in the 12-slot inventory popup (press E).
         const INV_KEY  = 'bearcave_inventory';
         const HARV_KEY = 'bearcave_harvested';
-        const inventoryGrid = document.getElementById('inventory-grid');
         let inventory = loadJSON(INV_KEY, {});
         let harvested = loadJSON(HARV_KEY, {});
         const saveInventory  = () => saveJSON(INV_KEY, inventory);
@@ -377,26 +386,7 @@
         function addToInventory(type) {
             inventory[type] = (inventory[type] || 0) + 1;
             saveInventory();
-            renderInventory();
-        }
-
-        function renderInventory() {
-            const types = Object.keys(inventory).filter(t => inventory[t] > 0);
-            if (types.length === 0) {
-                inventoryGrid.innerHTML = '<p class="inventory-empty">your inventory is empty. buy some seeds!</p>';
-                return;
-            }
-            inventoryGrid.innerHTML = '';
-            types.forEach(type => {
-                const card = document.createElement('div');
-                card.className = 'inv-card inv-card--' + type;
-                card.innerHTML = `
-                    <img src="${seedImgs[type]}" alt="${seedLabels[type]}">
-                    <p class="inv-name">${seedLabels[type]}</p>
-                    <p class="inv-count">×${inventory[type]}</p>
-                `;
-                inventoryGrid.appendChild(card);
-            });
+            renderInvPopup();
         }
 
         // ===== PLANTING (plots persisted, timers tick in the background) =====
@@ -418,7 +408,6 @@
         }
 
         const PLOTS_KEY = 'bearcave_plots';
-        const marketGrid = document.getElementById('market-grid');
 
         const plotGrid     = document.getElementById('plot-grid');
         const picker       = document.getElementById('seed-picker');
@@ -540,7 +529,7 @@
             inventory[type] -= 1;
             if (inventory[type] <= 0) delete inventory[type];
             saveInventory();
-            renderInventory();
+            renderInvPopup();
 
             const plot = activePlot;
             const idx = plot.dataset.index;
@@ -900,8 +889,17 @@
             const idx = plot.dataset.index;
             const state = plotState[idx];
             if (!state) return;
+            const type = state.type;
+            // A harvest needs a free slot UNLESS this crop type already has a
+            // stack in the inventory (then it just stacks). Seeds count toward
+            // the 12-slot limit too.
+            const isNewCropType = !harvested[type] || harvested[type] <= 0;
+            if (isNewCropType && invStacks().length >= 12) {
+                blockHarvest();          // tell the player to make room; plot stays grown
+                return;
+            }
             stopAnts(idx);
-            harvested[state.type] = (harvested[state.type] || 0) + 1;
+            harvested[type] = (harvested[type] || 0) + 1;
             addHarvested(state.type);          // lifetime harvest count (for achievements)
             delete plotState[idx];
             savePlots();
@@ -909,63 +907,224 @@
             plot.querySelector('img').src = EMPTY_IMG;
             plot.querySelector('.plot-overlay').textContent = '';
             plot.classList.remove('planted', 'grown', 'growing', 'needs-water', 'paused', 'ants');
-            renderMarket();
+            renderInvPopup();
             checkAchievements();
         }
 
-        // ===== FARMERS MARKET — sell ALL crops at once =====
-        const sellAllBtn = document.getElementById('sell-all-btn');
-        function totalHarvestCount() {
-            return Object.values(harvested).reduce((sum, n) => sum + n, 0);
+        // "sorry, your inventory is full" — open the popup so the player can
+        // sell or send crops to the kitchen to make room.
+        function blockHarvest() {
+            openInvPopup();
+            invTitle.textContent = 'sorry — inventory is full!';
+            flashInvToast('your inventory is full · sell or send crops to the kitchen');
         }
-        function totalHarvestValue() {
-            return Object.keys(harvested).reduce((sum, t) => sum + sellPrices[t] * harvested[t], 0);
-        }
-        function refreshSellAllBtn() {
-            const total = totalHarvestCount();
-            if (total === 0) {
-                sellAllBtn.disabled = true;
-                sellAllBtn.textContent = 'no crops to sell';
-            } else {
-                sellAllBtn.disabled = false;
-                sellAllBtn.textContent = `sell all crops (×${total} → ${coinText(totalHarvestValue())})`;
-            }
-        }
-        sellAllBtn.addEventListener('click', () => {
-            const sold = totalHarvestCount();
-            if (sold === 0) return;
-            coins += totalHarvestValue();
-            addSold(sold);                  // lifetime crops sold (for achievements)
-            harvested = {};
-            saveHarvested();
-            renderCoins();
-            renderMarket();
-            refreshAllStates();
-        });
 
-        function renderMarket() {
-            const types = Object.keys(harvested).filter(t => harvested[t] > 0);
-            if (types.length === 0) {
-                marketGrid.innerHTML = '<p class="inventory-empty">no crops yet. grow and harvest some plants!</p>';
-                refreshSellAllBtn();
-                return;
-            }
-            marketGrid.innerHTML = '';
-            types.forEach(type => {
-                const count = harvested[type];
-                const card = document.createElement('article');
-                card.className = 'market-card inv-card--' + type;
-                card.innerHTML = `
-                    <img src="${grownImg(type)}" alt="${cropLabels[type]}">
-                    <h3>${cropLabels[type]}</h3>
-                    <p class="shop-cost">${coinText(sellPrices[type])} each</p>
-                    <p class="shop-stock">harvested: <span class="stock-count">${count}</span></p>
-                    <p class="shop-stock">total: <b>${coinText(sellPrices[type] * count)}</b></p>
-                `;
-                marketGrid.appendChild(card);
+        // ====================================================================
+        //  INVENTORY POPUP (press E)
+        //  A 3×4 (12-slot) grid holding both seeds (seed-packet form) and
+        //  harvested crops (plant form). Click a harvested crop to either
+        //  send it to the farmer's market (sell for coins) or to the kitchen
+        //  (adds to the kitchen counter). A quantity popup (1 / 5 / 10 / all)
+        //  decides how many to send.
+        // ====================================================================
+        const invPopup   = document.getElementById('inv-popup');
+        const invGrid     = document.getElementById('inv-grid');
+        const invDetail   = document.getElementById('inv-detail');
+        const invTitle    = document.getElementById('inv-title');
+        const invBack     = document.getElementById('inv-back');
+        const invClose    = document.getElementById('inv-close');
+        const openInvBtn  = document.getElementById('open-inventory-btn');
+        let invStage = 'grid';     // 'grid' | 'dest' | 'qty'
+        let invSelType = null;     // crop key chosen in stage 'dest'/'qty'
+        let invSelDest = null;     // 'market' | 'kitchen'
+
+        // Build the list of stacks to show: seeds first (seed-packet form),
+        // then harvested crops (plant form), each in SEED_KEYS order.
+        function invStacks() {
+            const stacks = [];
+            SEED_KEYS.forEach(k => {
+                if (inventory[k] > 0) stacks.push({ kind: 'seed',  type: k, count: inventory[k] });
             });
-            refreshSellAllBtn();
+            SEED_KEYS.forEach(k => {
+                if (harvested[k] > 0) stacks.push({ kind: 'crop', type: k, count: harvested[k] });
+            });
+            return stacks;
         }
+
+        function renderInvPopup() {
+            // Only rebuild the grid if we're on the grid stage (so we don't
+            // wipe a half-finished send while the popup is open).
+            if (invStage !== 'grid') return;
+            const stacks = invStacks();
+            invGrid.innerHTML = '';
+            const SLOTS = 12;
+            for (let i = 0; i < SLOTS; i++) {
+                const slot = document.createElement('button');
+                slot.type = 'button';
+                slot.className = 'inv-slot';
+                const s = stacks[i];
+                if (s) {
+                    const img = s.kind === 'seed' ? seedImgs[s.type] : grownImg(s.type);
+                    const label = s.kind === 'seed' ? seedLabels[s.type] : cropLabels[s.type];
+                    slot.classList.add('inv-slot--' + s.kind, 'inv-card--' + s.type);
+                    slot.innerHTML = `
+                        <img src="${img}" alt="${label}">
+                        <span class="inv-slot__count">×${s.count}</span>
+                        <span class="inv-slot__name">${label}</span>
+                    `;
+                    if (s.kind === 'crop') {
+                        slot.addEventListener('click', () => openInvDest(s.type));
+                    } else {
+                        slot.classList.add('inv-slot--seed');   // seeds: display only
+                        slot.title = 'plant this from a pot';
+                    }
+                } else {
+                    slot.classList.add('inv-slot--empty');
+                    slot.disabled = true;
+                    slot.innerHTML = '<span class="inv-slot__empty">·</span>';
+                }
+                invGrid.appendChild(slot);
+            }
+        }
+
+        // Stage 2 — choose where to send the crop.
+        function openInvDest(type) {
+            invSelType = type;
+            invStage = 'dest';
+            invGrid.hidden = true;
+            invDetail.hidden = false;
+            invBack.hidden = false;
+            invTitle.textContent = cropLabels[type] + ' ×' + harvested[type];
+            invDetail.innerHTML = `
+                <img class="inv-detail__img" src="${grownImg(type)}" alt="${cropLabels[type]}">
+                <p class="inv-detail__info">you have <b>${harvested[type]}</b> ${cropLabels[type]}.<br>send them to:</p>
+                <div class="inv-dest">
+                    <button type="button" class="inv-dest__btn inv-dest__btn--market">🪙 farmer's market<br><small>${coinText(sellPrices[type])} each</small></button>
+                    <button type="button" class="inv-dest__btn inv-dest__btn--kitchen">🍳 kitchen<br><small>save for later</small></button>
+                </div>
+            `;
+            invDetail.querySelector('.inv-dest__btn--market').addEventListener('click', () => openInvQty('market'));
+            invDetail.querySelector('.inv-dest__btn--kitchen').addEventListener('click', () => openInvQty('kitchen'));
+        }
+
+        // Stage 3 — choose how many to send.
+        function openInvQty(dest) {
+            invSelDest = dest;
+            invStage = 'qty';
+            const type = invSelType;
+            const have = harvested[type];
+            const opts = [1, 5, 10, 'all'];
+            const destLabel = dest === 'market' ? "farmer's market" : 'kitchen';
+            invDetail.innerHTML = `
+                <img class="inv-detail__img" src="${grownImg(type)}" alt="${cropLabels[type]}">
+                <p class="inv-detail__info">send <b>${cropLabels[type]}</b> to the <b>${destLabel}</b>:</p>
+                <div class="inv-qty"></div>
+            `;
+            const qtyWrap = invDetail.querySelector('.inv-qty');
+            opts.forEach(opt => {
+                const n = opt === 'all' ? have : opt;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'inv-qty__btn';
+                btn.textContent = opt === 'all' ? 'all (' + have + ')' : String(opt);
+                if (n <= 0 || n > have) { btn.disabled = true; }
+                btn.addEventListener('click', () => sendInvStack(n));
+                qtyWrap.appendChild(btn);
+            });
+        }
+
+        // Execute the send.
+        function sendInvStack(n) {
+            const type = invSelType;
+            n = Math.max(0, Math.min(n, harvested[type] || 0));
+            if (n <= 0) { backInvToGrid(); return; }
+            if (invSelDest === 'market') {
+                const gained = sellPrices[type] * n;
+                coins += gained;
+                addSold(n);                 // lifetime crops sold (for achievements)
+                setCoins(coins);
+                harvested[type] -= n;
+                if (harvested[type] <= 0) delete harvested[type];
+                saveHarvested();
+                renderCoins();
+                flashInvToast('+' + coinText(gained) + ' · sold ' + n + ' ' + cropLabels[type]);
+            } else { // kitchen
+                addToKitchen(type, n);
+                harvested[type] -= n;
+                if (harvested[type] <= 0) delete harvested[type];
+                saveHarvested();
+                flashInvToast('🍳 sent ' + n + ' ' + cropLabels[type] + ' to the kitchen');
+            }
+            backInvToGrid();
+            refreshAllStates();
+            checkAchievements();
+        }
+
+        function backInvToGrid() {
+            invStage = 'grid';
+            invSelType = null;
+            invSelDest = null;
+            invDetail.hidden = true;
+            invGrid.hidden = false;
+            invBack.hidden = true;
+            invTitle.textContent = 'inventory';
+            renderInvPopup();
+        }
+
+        function openInvPopup() {
+            if (picker.classList.contains('open')) return;   // don't overlap the planting picker
+            invStage = 'grid';
+            invDetail.hidden = true;
+            invGrid.hidden = false;
+            invBack.hidden = true;
+            invTitle.textContent = 'inventory';
+            renderInvPopup();
+            invPopup.setAttribute('aria-hidden', 'false');
+            invPopup.classList.add('open');
+        }
+        function closeInvPopup() {
+            invPopup.setAttribute('aria-hidden', 'true');
+            invPopup.classList.remove('open');
+            backInvToGrid();
+        }
+        function toggleInvPopup() {
+            if (invPopup.classList.contains('open')) closeInvPopup(); else openInvPopup();
+        }
+
+        // tiny confirmation toast inside the popup area (non-blocking)
+        let invToastTimer = 0;
+        function flashInvToast(msg) {
+            let t = document.getElementById('inv-toast');
+            if (!t) {
+                t = document.createElement('div');
+                t.id = 'inv-toast';
+                t.className = 'inv-toast';
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            t.classList.add('inv-toast--show');
+            clearTimeout(invToastTimer);
+            invToastTimer = setTimeout(() => t.classList.remove('inv-toast--show'), 1600);
+        }
+
+        openInvBtn.addEventListener('click', toggleInvPopup);
+        invClose.addEventListener('click', closeInvPopup);
+        invBack.addEventListener('click', () => {
+            if (invStage === 'qty') openInvDest(invSelType);   // qty -> back to destination
+            else backInvToGrid();                              // dest -> back to grid
+        });
+        invPopup.addEventListener('click', e => { if (e.target === invPopup) closeInvPopup(); });
+
+        // Press E to toggle the inventory popup (ignored while typing or
+        // while another text input is focused).
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { closeInvPopup(); return; }
+            if (e.key !== 'e' && e.key !== 'E') return;
+            const el = document.activeElement;
+            if (el && /INPUT|TEXTAREA|SELECT/.test(el.tagName)) return;
+            e.preventDefault();
+            toggleInvPopup();
+        });
 
         // ===== Refresh all buy-button states =====
         function refreshAllStates() {
@@ -973,7 +1132,7 @@
             updateWaterBuyState();
             updatePestBuyState();
             updateFertBuyState();
-            refreshSellAllBtn();
+            renderInvPopup();
             checkAchievements();   // wealth / stockpile / hydrated / prepared / market / fert-use
         }
 
@@ -982,8 +1141,7 @@
         renderWater();
         renderPestControl();
         renderFertilizer();
-        renderInventory();
-        renderMarket();
+        renderInvPopup();
         plotGrid.querySelectorAll('.plot').forEach(updatePlot);  // restore plots
         refreshAllStates();
 

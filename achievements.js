@@ -41,6 +41,18 @@ const ACH_WORDING = {
         5:   { title: 'cauliflower x5',   desc: 'harvest 5 cauliflowers.' },
         20:  { title: 'cauliflower x20',  desc: 'harvest 20 cauliflowers.' },
         100: { title: 'cauliflower x100', desc: 'harvest 100 cauliflowers.' }
+    },
+    onion: {
+        1:   { title: 'first onion',    desc: 'harvest your first onion.' },
+        5:   { title: 'onion x5',       desc: 'harvest 5 onions.' },
+        20:  { title: 'onion x20',      desc: 'harvest 20 onions.' },
+        100: { title: 'onion x100',    desc: 'harvest 100 onions.' }
+    },
+    tomato: {
+        1:   { title: 'first tomato',   desc: 'harvest your first tomato.' },
+        5:   { title: 'tomato x5',      desc: 'harvest 5 tomatoes.' },
+        20:  { title: 'tomato x20',     desc: 'harvest 20 tomatoes.' },
+        100: { title: 'tomato x100',    desc: 'harvest 100 tomatoes.' }
     }
 };
 const ACH_PLANT_TIERS = [1, 5, 20, 100];
