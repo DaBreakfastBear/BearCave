@@ -148,6 +148,11 @@ body {
 }
 .broke-hint[hidden] { display: none !important; }
 
+/* The .inv-grid / .inv-detail panels set display: grid / flex, which would
+   override the browser's default [hidden]{display:none}. Force-hide them when
+   the hidden attribute is set, so sold crops actually disappear from view. */
+.inv-grid[hidden], .inv-detail[hidden] { display: none !important; }
+
 /* Row of three labeled screenshots */
 .nursery-row {
     display: flex;

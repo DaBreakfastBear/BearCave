@@ -65,9 +65,30 @@ const TIER_ICON = {
     100: key => grownImg(key)
 };
 
+// Achievements are STICKY: once you've met the goal, they stay unlocked
+// forever (until a reset wipes the map below). This matters for "hold X
+// at once" goals like rich bear (1000 coins) or reservoir (100 water) —
+// you shouldn't lose them just because you spent the coins back down.
+//
+// checkAchievements() writes every unlocked achievement's id into the
+// ACH_SHOWN_KEY map (so it doesn't re-toast). That same map doubles as our
+// persistent "ever earned" record — it's already wiped on reset, so no
+// separate key and no migration are needed.
+let _achShownCache = null;
+function achShownMap() {
+    if (_achShownCache === null) _achShownCache = loadJSON(ACH_SHOWN_KEY, {});
+    return _achShownCache;
+}
+
 // Build one achievement object with a stable id.
 function achItem(id, icon, title, desc, current, goal) {
-    return { id, icon, title, desc, current: Math.min(current, goal), goal, done: current >= goal };
+    const earned = current >= goal || !!achShownMap()[id];
+    return {
+        id, icon, title, desc,
+        current: earned ? goal : Math.min(current, goal),   // freeze progress at the goal once earned
+        goal,
+        done: earned
+    };
 }
 
 // "first seed planted" — plant any seed once (plant-based, total across crops).
@@ -215,7 +236,7 @@ function toastAchievement(ach) {
 // Toast every achievement that is done but hasn't been shown yet.
 function checkAchievements() {
     if (!document.body) return;
-    const shown = loadJSON(ACH_SHOWN_KEY, {});
+    const shown = achShownMap();   // shared cache so achItem's sticky flag stays in sync
     let changed = false;
     allAchievements().forEach(a => {
         if (a.done && !shown[a.id]) {
