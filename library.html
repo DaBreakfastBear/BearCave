@@ -33,44 +33,20 @@
             <img class="library-hero-corner" src="door.png" alt="" aria-hidden="true">
         </div>
 
-        <div class="blog-grid" id="blog-grid">
-            <!-- The Book of Knowledge — Book 1 — costs 10 coins to unlock -->
-            <a href="book-of-knowledge.html" class="blog-card" id="blog-book">
+        <!-- Books stand on a brown wooden shelf. Just the cover art; a locked
+             book is hidden behind a grey panel with a ? and a how-to-unlock hint. -->
+        <div class="library-shelf" id="library-shelf">
+            <a href="book-of-knowledge.html" class="lib-book" id="lib-book-knowledge" aria-label="Book of Knowledge">
                 <img src="book1.png" alt="Book of Knowledge">
-                <div class="blog-card__body">
-                    <h3>Book of Knowledge</h3>
-                    <p>A handy guide to every seed — cost, sell price, growth time &amp; water. This is Book 1.</p>
-                    <span class="blog-card__tag" id="blog-book-tag">10 coins to unlock</span>
-                </div>
+                <span class="lib-book__lock" id="lib-book-knowledge-lock" aria-hidden="true">
+                    <span class="lib-book__q">?</span>
+                    <span class="lib-book__hint">give 10 coins to unlock</span>
+                </span>
             </a>
 
-            <!-- Placeholder blogs -->
-            <article class="blog-card blog-card--soon">
-                <img src="Screenshot 2026-08-24 at 5.38.34 PM.png" alt="Coming soon">
-                <div class="blog-card__body">
-                    <h3>Growing Tips</h3>
-                    <p>Water, fertilizer &amp; timing tricks for a thriving nursery.</p>
-                    <span class="blog-card__tag blog-card__tag--soon">coming soon</span>
-                </div>
-            </article>
-
-            <article class="blog-card blog-card--soon">
-                <img src="Screenshot 2026-08-23 at 9.13.11 PM.png" alt="Coming soon">
-                <div class="blog-card__body">
-                    <h3>Bear Cave Lore</h3>
-                    <p>The story behind the cave and the seeds within it.</p>
-                    <span class="blog-card__tag blog-card__tag--soon">coming soon</span>
-                </div>
-            </article>
-
-            <article class="blog-card blog-card--soon">
-                <img src="Screenshot 2025-09-26 at 5.04.53 PM.png" alt="Coming soon">
-                <div class="blog-card__body">
-                    <h3>Market Watch</h3>
-                    <p>Which crops are worth your coins this season.</p>
-                    <span class="blog-card__tag blog-card__tag--soon">coming soon</span>
-                </div>
-            </article>
+            <a href="persica.html" class="lib-book" aria-label="Persica">
+                <img src="persica.png" alt="Persica">
+            </a>
         </div>
     </header>
 
@@ -94,11 +70,11 @@
 
     <script>
         renderCoinBalance();
-        // If the Book of Knowledge is already unlocked, mark its tag.
-        const tag = document.getElementById('blog-book-tag');
+        // If the Book of Knowledge is already unlocked, lift the grey ? cover
+        // so the real book cover shows through on the shelf.
         if (isBookUnlocked()) {
-            tag.textContent = 'unlocked';
-            tag.classList.add('blog-card__tag--owned');
+            const lock = document.getElementById('lib-book-knowledge-lock');
+            if (lock) lock.hidden = true;
         }
 
         // ===== Rabbit door (tiny door on the bookshelf corner) =====
@@ -136,7 +112,10 @@
         function closeRabbitModal() { modal.hidden = true; }
 
         door.addEventListener('click', () => {
-            if (harvestedCount('carrot') >= RABBIT_COST) {
+            if (isRabbitDoorPaid()) {
+                // already gave 100 carrots once — door opens for free now
+                window.location.href = 'rabbit-hub.html';
+            } else if (harvestedCount('carrot') >= RABBIT_COST) {
                 openRabbitModal();      // grown 100 carrots - offer to enter
             } else {
                 showKnockKnock();       // not yet - knock knock
@@ -152,6 +131,7 @@
             h.carrot = (h.carrot || 0) - RABBIT_COST;
             if (h.carrot <= 0) delete h.carrot;
             saveJSON(HARV_KEY, h);      // give the carrots away
+            payRabbitDoor();            // remember: never ask for carrots again
             window.location.href = 'rabbit-hub.html';
         });
     </script>

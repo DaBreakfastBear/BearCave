@@ -51,6 +51,24 @@
         </nav>
     </header>
 
+    <!-- Dev/test safe: enter a code to dump carrots & coins for testing -->
+    <button type="button" id="test-safe" aria-label="Dev safe">🔐</button>
+
+    <div class="rabbit-door-modal" id="test-safe-modal" hidden>
+        <div class="rabbit-door-card">
+            <h3>SAFE</h3>
+            <p class="rabbit-door-note">enter the code</p>
+            <input id="test-safe-code" type="password" inputmode="numeric" autocomplete="off"
+                   placeholder="code"
+                   style="width:100%;box-sizing:border-box;padding:0.5rem 0.75rem;border:2px solid #d8c5a8;border-radius:10px;font:inherit;margin:0.4rem 0 0.6rem;" />
+            <p class="rabbit-door-note" id="test-safe-msg" hidden></p>
+            <div class="rabbit-door-actions">
+                <button type="button" id="test-safe-back">back</button>
+                <button type="button" id="test-safe-ok">open</button>
+            </div>
+        </div>
+    </div>
+
     <script src="storage.js"></script>
     <script src="seeds.js"></script>
     <script src="achievements.js"></script>
@@ -91,6 +109,58 @@
             renderCoinBalance();
             renderBrokeHint();
             renderHomeCoin();
+        });
+
+        // ===== Dev / test safe =====
+        // A little safe on the home page. Enter the right code to dump
+        // 100 carrots + 20,000 coins into storage for easy testing.
+        const SAFE_CODE = '3141592653589';
+        const HARV_KEY    = 'bearcave_harvested';   // current harvested crops
+        const safeBtn   = document.getElementById('test-safe');
+        const safeModal = document.getElementById('test-safe-modal');
+        const safeInput = document.getElementById('test-safe-code');
+        const safeOk    = document.getElementById('test-safe-ok');
+        const safeBack  = document.getElementById('test-safe-back');
+        const safeMsg    = document.getElementById('test-safe-msg');
+
+        if (safeBtn) {
+            safeBtn.addEventListener('click', () => {
+                safeMsg.hidden = true;
+                safeMsg.textContent = '';
+                safeInput.value = '';
+                safeModal.hidden = false;
+                safeInput.focus();
+            });
+        }
+        function closeSafe() { if (safeModal) safeModal.hidden = true; }
+
+        if (safeBack) safeBack.addEventListener('click', closeSafe);
+        if (safeModal) safeModal.addEventListener('click', e => { if (e.target === safeModal) closeSafe(); });
+
+        function claimSafe() {
+            // dump 100 carrots into current harvested inventory + lifetime
+            // count, so the rabbit door sees "grown 100" and there are 100
+            // carrots ready to give away.
+            const h = loadJSON(HARV_KEY, {});
+            h.carrot = (h.carrot || 0) + 100;
+            saveJSON(HARV_KEY, h);
+            addHarvested('carrot', 100);
+            addCoins(20000);
+            renderCoinBalance();
+            safeMsg.hidden = false;
+            safeMsg.textContent = 'safe cracked! +100 carrots, +20,000 coins.';
+        }
+
+        if (safeOk) safeOk.addEventListener('click', () => {
+            if (safeInput.value.trim() === SAFE_CODE) {
+                claimSafe();
+            } else {
+                safeMsg.hidden = false;
+                safeMsg.textContent = 'wrong code.';
+            }
+        });
+        if (safeInput) safeInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); safeOk.click(); }
         });
     </script>
 </body>

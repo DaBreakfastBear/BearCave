@@ -848,6 +848,16 @@ body {
     flex-wrap: wrap;
 }
 
+/* "sell all" pill inside the inventory popup actions row */
+#inv-sell-all.sell-all-btn {
+    display: inline-block;
+    margin: 0;
+    padding: 0.5rem 1.4rem;
+    background: #8a5a2b;          /* warm harvest gold-brown */
+}
+#inv-sell-all.sell-all-btn:hover:not(:disabled) { background: #6e4420; }
+#inv-sell-all.sell-all-btn[hidden] { display: none; }
+
 /* Pot-tier choice buttons (stage 1 of the picker). They reuse the empty
    pot art with a colored badge so each tier is easy to tell apart even
    though we don't have per-tier pot art yet. */
@@ -1551,6 +1561,94 @@ body {
 .blog-card--soon { opacity: 0.65; cursor: default; }
 .blog-card--soon:hover { transform: none; box-shadow: 0 6px 18px rgba(27, 73, 101, 0.25); }
 
+/* ===== Library shelf — books standing on a brown wooden plank ===== */
+/* Each book is JUST its cover art (no title/description). A book that
+   still needs unlocking is hidden behind a grey panel with a ? and a
+   short how-to-unlock hint. */
+.library-shelf {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;     /* books stand on the plank */
+    gap: clamp(1.2rem, 4vw, 2.8rem);
+    max-width: 900px;
+    margin: 3rem auto 0;
+    padding: 1.5rem 2rem 0;
+}
+/* The brown shelf board the books rest on */
+.library-shelf::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 24px;
+    background:
+        linear-gradient(#9a6334, #73451f 70%, #5e371a);
+    border-radius: 6px;
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.4),
+                inset 0 2px 3px rgba(255, 255, 255, 0.2),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.35);
+    z-index: 0;
+}
+
+/* A single book — portrait cover standing on the shelf */
+.lib-book {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    width: auto;
+    height: clamp(190px, 30vw, 300px);
+    aspect-ratio: 542 / 794;
+    border-radius: 4px 8px 8px 4px;
+    background: transparent;          /* cover art is transparent PNG — no box behind it */
+    transition: transform 0.16s ease;
+    z-index: 1;
+}
+.lib-book img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;            /* show the whole cover, never crop */
+    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.35));
+    transition: filter 0.16s ease;
+}
+.lib-book:hover { transform: translateY(-7px); }
+.lib-book:hover img { filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.45)); }
+
+/* Grey "locked" cover — sits on top of the book, hiding the art behind a
+   ? mark and a one-line hint about how to unlock it. */
+.lib-book__lock {
+    position: absolute;
+    inset: 0;
+    border-radius: 4px 8px 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    background:
+        linear-gradient(155deg, #a7a7ad 0%, #7f7f87 55%, #5f5f66 100%);
+    color: #fff;
+    padding: 0.6rem;
+}
+.lib-book__lock[hidden] { display: none; }
+.lib-book__q {
+    font-size: clamp(3rem, 9vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+}
+.lib-book__hint {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 0.95;
+    max-width: 11rem;
+}
+
 @media (max-width: 700px) {
     .blog-grid, .home-grid { grid-template-columns: 1fr; }
 }
@@ -1612,6 +1710,26 @@ body {
     -webkit-text-stroke: 0;
 }
 #reset-sparkle:hover { opacity: 1; transform: scale(1.18); }
+
+/* Dev / test safe (home page) — bottom-right, opposite the reset sparkle */
+#test-safe {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0.5;
+    z-index: 60;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+#test-safe:hover { opacity: 1; transform: scale(1.18); }
 
 /* ===== Achievements page ===== */
 .ach-summary {

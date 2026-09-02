@@ -143,6 +143,14 @@ function kitchenTotal() {
     return Object.values(getKitchen()).reduce((s, n) => s + n, 0);
 }
 
+// --- Rabbit door (one-time 100-carrot payment to Peachy) ---
+// The little door in the library costs 100 carrots to enter the rabbit
+// hub, but only ONCE. After the first payment this flag is set and the
+// door opens freely from then on (until a reset wipes it).
+const RABBIT_DOOR_KEY = 'bearcave_rabbit_door_paid';
+function isRabbitDoorPaid()  { return localStorage.getItem(RABBIT_DOOR_KEY) === '1'; }
+function payRabbitDoor()     { localStorage.setItem(RABBIT_DOOR_KEY, '1'); }
+
 // --- Ants cleared (lifetime) ---
 const ANTS_CLEARED_KEY = 'bearcave_ants_cleared';
 function getAntsCleared() { return loadJSON(ANTS_CLEARED_KEY, 0) || 0; }

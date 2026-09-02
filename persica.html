@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Cave · Persica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Lexend (site font) + Caveat (a scrawling handwriting font for the book) -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== Persica — looks like a single white page of a scrawled book ===== */
+        body.persica-page {
+            /* peach/persica themed backdrop: warm reds, blush & a touch of amber */
+            background:
+                radial-gradient(circle at 20% 18%, #f7b88f 0%, transparent 38%),
+                radial-gradient(circle at 82% 12%, #e88a6a 0%, transparent 42%),
+                radial-gradient(circle at 70% 88%, #c0492f 0%, transparent 55%),
+                linear-gradient(160deg, #b8392b 0%, #d9663f 45%, #ef9a6a 100%);
+            padding: 0;
+            margin: 0;
+        }
+
+        /* The white sheet of paper the story is written on */
+        .persica-sheet {
+            position: relative;
+            max-width: 920px;          /* wider / fatter page */
+            margin: 7rem auto 4rem;
+            padding: 4rem 4.5rem 5rem;
+            background: #fffdf6;
+            border-radius: 4px;
+            box-shadow:
+                0 1px 2px rgba(0,0,0,0.08),
+                0 18px 50px rgba(40, 30, 10, 0.28);
+            /* faint ruled lines, like notebook paper */
+            background-image: linear-gradient(to bottom,
+                transparent 0,
+                transparent calc(2.6rem - 1px),
+                #d7cbb0 calc(2.6rem - 1px),
+                #d7cbb0 2.6rem);
+            background-size: 100% 2.6rem;
+            background-position: 0 1.4rem;
+            font-family: 'Caveat', cursive;
+        }
+
+        /* Hide the ruled lines behind wide gaps in the heading area */
+        .persica-sheet h1 {
+            position: relative;
+            z-index: 1;
+            margin: 0 0 1.2rem;
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2.6rem, 9vw, 4rem);
+            font-weight: 700;
+            line-height: 1;
+            color: #7a1f12;
+            letter-spacing: 0.01em;
+            background: #fffdf6;
+            display: inline-block;
+            padding: 0 0.4rem;
+        }
+
+        .persica-byline {
+            position: relative;
+            z-index: 1;
+            margin: 0 0 2.2rem;
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            color: #a83a1e;
+            background: #fffdf6;
+            display: inline-block;
+            padding: 0 0.4rem;
+        }
+
+        /* The story body — each paragraph sits on its own ruled line */
+        .persica-story p {
+            position: relative;
+            z-index: 1;
+            margin: 0 0 0.4rem;
+            font-family: 'Caveat', cursive;
+            font-size: 1.7rem;
+            line-height: 2.6rem;          /* matches the ruled-line spacing */
+            color: #6b1f14;
+        }
+
+        .persica-story p + p { text-indent: 1.5rem; }
+
+        /* A little flourish at the end */
+        .persica-end {
+            position: relative;
+            z-index: 1;
+            margin-top: 2.4rem;
+            text-align: center;
+            font-family: 'Caveat', cursive;
+            font-size: 2rem;
+            color: #b04a2a;
+        }
+
+        /* Scrambled "cipher" lines scattered through the text — fainter,
+           smaller, like jumbled marginalia that's almost unreadable. */
+        .persica-story p.cipher {
+            font-size: 1.35rem;
+            line-height: 2.4rem;
+            color: #c97a4a;
+            opacity: 0.9;
+            letter-spacing: 0.02em;
+            text-indent: 0;
+            word-break: break-all;
+        }
+
+        /* Keep the fixed corner logo & coin bar from the site layout */
+        .back-link {
+            position: relative;
+            z-index: 2;
+            margin-top: 3rem;
+            display: inline-block;
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            color: #a83a1e;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body class="nursery-body persica-page">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">0</span>
+    </div>
+
+    <main class="persica-sheet">
+        <h1>Persica</h1>
+        <p class="persica-byline">a tale of Peachy &amp; the rabbit door</p>
+
+        <div class="persica-story">
+            <p>Sing O’ Muse, to the hare so cunning, whos eye shines with mischief, whos adoration for the daucus carota is comparable to Death for Spring Showers. Birthed to existance in a small cove to a spider-like beast that spills cotton instead of thread, he bursts into life and names himself Peachy- for the Persica Tarts that hung upon branches, over the skins of his brothers. Born on the sol of independence from a nation for a nation, destined for greatness.</p>
+            <p class="cipher">ynecfiubeReadmirfunjhmfxkIneriuzvnh cfxkeThefunshkegxorfy2qr98yScrambleiexukjw</p>
+
+            <p>On the (day) of the (_mmonth_) moon (running date when book 2 is unlocked), Peachy scaled the great fort of the wooden fence and tunneled deep into the depths of the haven for thee plants. He carved a house of stone and mud, a bedroom of hay and wild flowers, and a room for food and hervest, similar to the great Cornucopia itself. But when its grasp turns empty and its walls bear, Peachy would pray to the Argus-Slayer and steal some crops- never more than what he needs.</p>
+            <p class="cipher">iulxtpurplesvidjvefpjocabbageefhijfaehredfaojfwuocarrotgwhrupveyellowuherwiobifldragonfwhaijofruiitikgkyjuthfg</p>
+
+            <p>Each time he tries farming, puurple dust settles on his crops… forced to eat purple cabbage….disgusting to him…. Favorite food to Sugar Plum,…. But poor Peachy, whos heart blessed by Aphrodite and cursed by Cupid……, always to shy to approach… always to shy to ask,... storage upon storgages  of purple cabbage…..</p>
+            <p class="cipher">Jjn lgiyhjh,vk.vhkiy012e9i3rf100fwhjcarrotsfhuwwfeuneedefowejq;;wfhq</p>
+
+            <p>On o day, the gardyner set a trap of golden silk and silver braces to protect the hervest. On triple moons and suns, Peachy pleged himself to the mighty god of battle and the god of twisted serpents and lies. He stormed the grain and stole rounds touched by Midas. The Mother of Spring, feuding with the Argus-Slayer, hid the last specie in the hallow branch of the antiet arbor near the lost prize of the Contest of Athens, where it is up to the gardyner himself to find….</p>
+            <p class="cipher">6rdls e.obihkbiug nyt867 gytfuy ,k7ytgrfd  u7m7mbn vhegfshef9qcwhyionshelikesoafncutowoneifcu nhfcdwreadfncwijekjfejxuPeachysnfowckuxfluhldbooksjnwcfoncimh</p>
+
+            <p>… Then on a faithful day of (day) on moon ( running day when 100 carrot achievement is unlocked) the gardyner let carrots fall from the sky like water on a rainy day. The Peachy sees the worthiness of th gardyner and the potential that can be harnessed to his liking. The gardyner, sensing his willingness to be befriended, gifts the Peachy the amount of carrots as the hands of the Hecatoncheires.  Flattered, he lets the gardyner into his humble abode and offers to negotiate a trade with the gardyner. The Peachy, cunning as the grey-eyed one, offers a scroll…</p>
+            <p class="cipher">??....>@!E@#^(&^(#tbhmehlphrqw;o</p>
+        </div>
+
+        <a href="library.html" class="back-link">← back to library</a>
+    </main>
+
+    <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script src="achievements.js"></script>
+    <script src="trail.js"></script>
+    <script>
+        renderCoinBalance();
+    </script>
+</body>
+</html>

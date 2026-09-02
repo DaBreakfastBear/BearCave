@@ -140,6 +140,7 @@
 
             <div class="picker-actions">
                 <button type="button" id="inv-back" class="picker-cancel" hidden>← back</button>
+                <button type="button" id="inv-sell-all" class="sell-all-btn" hidden>sell all</button>
                 <a href="kitchen.html" class="picker-cancel kitchen-link">kitchen →</a>
                 <button type="button" id="inv-close" class="picker-cancel">close</button>
             </div>
@@ -955,6 +956,7 @@
         const invTitle    = document.getElementById('inv-title');
         const invBack     = document.getElementById('inv-back');
         const invClose    = document.getElementById('inv-close');
+        const invSellAll  = document.getElementById('inv-sell-all');
         const openInvBtn  = document.getElementById('open-inventory-btn');
         let invStage = 'grid';     // 'grid' | 'dest' | 'qty'
         let invSelType = null;     // crop key chosen in stage 'dest'/'qty'
@@ -977,6 +979,7 @@
             // Only rebuild the grid if we're on the grid stage (so we don't
             // wipe a half-finished send while the popup is open).
             if (invStage !== 'grid') return;
+            updateSellAllBtn();
             const stacks = invStacks();
             invGrid.innerHTML = '';
             const SLOTS = 12;
@@ -1010,6 +1013,38 @@
             }
         }
 
+        // ===== Sell ALL harvested crops at once =====
+        function hasHarvestedCrops() {
+            return Object.keys(harvested).some(k => harvested[k] > 0);
+        }
+        function updateSellAllBtn() {
+            // Show the sell-all pill only on the grid stage, and only when
+            // there is actually at least one harvested crop to sell.
+            if (!invSellAll) return;
+            invSellAll.hidden = !(invStage === 'grid' && hasHarvestedCrops());
+        }
+        function sellAllInv() {
+            const types = Object.keys(harvested).filter(k => harvested[k] > 0);
+            if (types.length === 0) { flashInvToast('nothing to sell'); return; }
+            let total = 0, count = 0;
+            types.forEach(k => {
+                const n = harvested[k];
+                total += (sellPrices[k] || 0) * n;
+                count  += n;
+                delete harvested[k];
+            });
+            saveHarvested();
+            coins += total;
+            setCoins(coins);
+            addSold(count);                 // lifetime crops sold (for achievements)
+            renderCoins();
+            flashInvToast('+' + coinText(total) + ' · sold all ' + count + ' crops');
+            backInvToGrid();
+            refreshAllStates();
+            checkAchievements();
+        }
+        if (invSellAll) invSellAll.addEventListener('click', sellAllInv);
+
         // Stage 2 — choose where to send the crop.
         function openInvDest(type) {
             invSelType = type;
@@ -1017,6 +1052,7 @@
             invGrid.hidden = true;
             invDetail.hidden = false;
             invBack.hidden = false;
+            updateSellAllBtn();
             invTitle.textContent = cropLabels[type] + ' ×' + harvested[type];
             invDetail.innerHTML = `
                 <img class="inv-detail__img" src="${grownImg(type)}" alt="${cropLabels[type]}">
@@ -1037,6 +1073,7 @@
             invGrid.hidden = true;
             invDetail.hidden = false;
             invBack.hidden = false;
+            updateSellAllBtn();
             invTitle.textContent = seedLabels[type] + ' ×' + inventory[type];
             invDetail.innerHTML = `
                 <img class="inv-detail__img" src="${seedImgs[type]}" alt="${seedLabels[type]}">
@@ -1055,6 +1092,7 @@
         function openInvQty(dest) {
             invSelDest = dest;
             invStage = 'qty';
+            updateSellAllBtn();
             const type = invSelType;
             const have = harvested[type];
             const opts = [1, 5, 10, 'all'];
