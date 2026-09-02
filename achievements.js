@@ -53,6 +53,48 @@ const ACH_WORDING = {
         5:   { title: 'tomato x5',      desc: 'harvest 5 tomatoes.' },
         20:  { title: 'tomato x20',     desc: 'harvest 20 tomatoes.' },
         100: { title: 'tomato x100',    desc: 'harvest 100 tomatoes.' }
+    },
+    greenbean: {
+        1:   { title: 'first green bean', desc: 'harvest your first green bean.' },
+        5:   { title: 'green bean x5',    desc: 'harvest 5 green beans.' },
+        20:  { title: 'green bean x20',  desc: 'harvest 20 green beans.' },
+        100: { title: 'green bean x100', desc: 'harvest 100 green beans.' }
+    },
+    garlic: {
+        1:   { title: 'first garlic',  desc: 'harvest your first garlic.' },
+        5:   { title: 'garlic x5',     desc: 'harvest 5 garlics.' },
+        20:  { title: 'garlic x20',    desc: 'harvest 20 garlics.' },
+        100: { title: 'garlic x100',   desc: 'harvest 100 garlics.' }
+    },
+    cucumber: {
+        1:   { title: 'first cucumber', desc: 'harvest your first cucumber.' },
+        5:   { title: 'cucumber x5',    desc: 'harvest 5 cucumbers.' },
+        20:  { title: 'cucumber x20',  desc: 'harvest 20 cucumbers.' },
+        100: { title: 'cucumber x100', desc: 'harvest 100 cucumbers.' }
+    },
+    corn: {
+        1:   { title: 'first corn',  desc: 'harvest your first corn.' },
+        5:   { title: 'corn x5',     desc: 'harvest 5 corns.' },
+        20:  { title: 'corn x20',    desc: 'harvest 20 corns.' },
+        100: { title: 'corn x100',   desc: 'harvest 100 corns.' }
+    },
+    sugarbeet: {
+        1:   { title: 'first sugar beet', desc: 'harvest your first sugar beet.' },
+        5:   { title: 'sugar beet x5',    desc: 'harvest 5 sugar beets.' },
+        20:  { title: 'sugar beet x20',  desc: 'harvest 20 sugar beets.' },
+        100: { title: 'sugar beet x100', desc: 'harvest 100 sugar beets.' }
+    },
+    sunflower: {
+        1:   { title: 'first sunflower', desc: 'harvest your first sunflower.' },
+        5:   { title: 'sunflower x5',    desc: 'harvest 5 sunflowers.' },
+        20:  { title: 'sunflower x20',  desc: 'harvest 20 sunflowers.' },
+        100: { title: 'sunflower x100', desc: 'harvest 100 sunflowers.' }
+    },
+    shiitake: {
+        1:   { title: 'first shiitake mushroom', desc: 'harvest your first shiitake mushroom.' },
+        5:   { title: 'shiitake mushroom x5',    desc: 'harvest 5 shiitake mushrooms.' },
+        20:  { title: 'shiitake mushroom x20',  desc: 'harvest 20 shiitake mushrooms.' },
+        100: { title: 'shiitake mushroom x100', desc: 'harvest 100 shiitake mushrooms.' }
     }
 };
 const ACH_PLANT_TIERS = [1, 5, 20, 100];

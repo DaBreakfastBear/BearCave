@@ -619,6 +619,13 @@ body {
 .inv-card--cauliflower { border-top: 5px solid #b8c6d4; }   /* white seed */
 .inv-card--onion       { border-top: 5px solid #d9c89a; }   /* white seed (tan tint) */
 .inv-card--tomato      { border-top: 5px solid #c0392b; }   /* red seed (deep red) */
+.inv-card--greenbean   { border-top: 5px solid #6fae5b; }   /* green seed */
+.inv-card--garlic      { border-top: 5px solid #e8e0c8; }   /* white seed */
+.inv-card--cucumber    { border-top: 5px solid #5b9d6a; }   /* green seed */
+.inv-card--corn       { border-top: 5px solid #f1c40f; }   /* yellow seed */
+.inv-card--sugarbeet   { border-top: 5px solid #d8d8e0; }   /* white seed */
+.inv-card--sunflower   { border-top: 5px solid #f6b51b; }   /* yellow seed */
+.inv-card--shiitake    { border-top: 5px solid #b08d6a; }   /* brown cap */
 
 /* ===== Seed picker modal ===== */
 .picker-modal {
@@ -707,7 +714,117 @@ body {
 
 .picker-cancel:hover { background: var(--dark-blue); color: var(--white); }
 
-/* ===== Sparkle mouse trail (shared site-wide via trail.js) ===== */
+/* ===== Gardener (hired helper that auto-grows shed seeds) ===== */
+.nursery-field {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 2.5rem auto 0;
+    max-width: 1100px;
+}
+/* The 6 pots keep their original size & 3-col grid — they never shrink
+   to make room for the gardener. The gardener just sits to the left. */
+.nursery-field .nursery-grid {
+    margin: 0;            /* override the auto top margin inside the flex row */
+    flex: 0 0 auto;
+}
+.gardener-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 0 0 auto;
+    /* hug the left edge of the grid (the space between here and the left
+       sparkle column is left empty — sparkles act as the visual edge). */
+    padding-top: 0.5rem;
+}
+.hire-gardener-btn {
+    border: 2px solid var(--dark-blue);
+    background: var(--dark-blue);
+    color: var(--white);
+    border-radius: 999px;
+    padding: 0.45rem 1.1rem;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.hire-gardener-btn:hover:not(:disabled) { background: #143a52; }
+.hire-gardener-btn:disabled {
+    background: #9bb3c4;
+    border-color: #9bb3c4;
+    cursor: default;
+    opacity: 0.85;
+}
+.gardener-pod {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+.gardener-pod[hidden] { display: none; }
+.gardener-plot {
+    width: 150px;
+    cursor: default;
+}
+.gardener-plot:hover { transform: none; }
+.gardener-plot img { height: 130px; }
+.gardener-shed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+.gardener-shed__label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dark-blue);
+    opacity: 0.7;
+}
+.gardener-shed__seeds {
+    position: relative;
+    min-width: 72px;
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.gardener-shed__packet {
+    position: relative;
+    width: 56px;
+}
+.gardener-shed__packet img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.gardener-shed__count {
+    position: absolute;
+    right: -8px;
+    bottom: -4px;
+    background: var(--dark-blue);
+    color: var(--white);
+    font-size: 0.68rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.05rem 0.4rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.gardener-shed__empty {
+    font-size: 0.72rem;
+    color: var(--dark-blue);
+    opacity: 0.55;
+}
+.inv-dest__btn--gardener { border-color: #2e7d32; }
+.inv-dest__btn--gardener:hover { background: #2e7d32; }
+@media (max-width: 700px) {
+    .nursery-field { flex-direction: column; align-items: center; }
+    .nursery-field .gardener-aside { order: 2; }
+}
 .sparkle {
     position: fixed;
     pointer-events: none;
@@ -833,7 +950,7 @@ body {
     line-height: 1.1;
     text-transform: capitalize;
 }
-.inv-slot--seed { cursor: default; opacity: 0.92; }
+.inv-slot--seed { cursor: pointer; opacity: 0.92; }
 .inv-slot--seed:hover { transform: none; border-color: rgba(27,73,101,0.18); box-shadow: none; }
 
 /* Stage 2/3 detail panel */
@@ -1250,13 +1367,120 @@ body {
 .back-link:hover { opacity: 1; text-decoration: underline; }
 
 /* ===== Blogs grid ===== */
-.library-hero {
+.library-hero-wrap {
+    position: relative;
     display: block;
     width: min(70vw, 520px);
-    height: auto;
     margin: 1.5rem auto 0;
+}
+.library-hero {
+    display: block;
+    width: 100%;
+    height: auto;
     border-radius: 18px;
     filter: drop-shadow(0 10px 24px rgba(27, 73, 101, 0.35));
+}
+/* tiny door covering the bottom-right corner of the bookshelf image.
+   It's clickable — tapping it checks whether you've grown 100 carrots. */
+.library-hero-corner {
+    position: absolute;
+    right: 7px;
+    bottom: 7px;
+    width: 26px;
+    height: auto;
+    border-radius: 4px;
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.12s ease;
+}
+.library-hero-corner:hover { transform: scale(1.15); }
+
+/* "knock knock" — tiny text that floats up & fades out near the door */
+.knock-knock {
+    position: absolute;
+    right: 8px;
+    bottom: 34px;
+    font-size: 0.7rem;
+    color: var(--dark-blue);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.85);
+    animation: knockFloat 1.8s ease-out forwards;
+}
+@keyframes knockFloat {
+    0%   { opacity: 0;  transform: translateY(0); }
+    20%  { opacity: 1;  transform: translateY(-6px); }
+    70%  { opacity: 1;  transform: translateY(-14px); }
+    100% { opacity: 0;  transform: translateY(-24px); }
+}
+
+/* ===== Rabbit door modal (give 100 carrots to enter the rabbit hub) ===== */
+.rabbit-door-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    padding: 1rem;
+}
+.rabbit-door-modal[hidden] { display: none; }
+.rabbit-door-card {
+    background: var(--light-blue);
+    border: 3px solid var(--dark-blue);
+    border-radius: 18px;
+    padding: 1.5rem;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+.rabbit-door-card h3 {
+    color: var(--dark-blue);
+    font-size: 1.25rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+}
+.rabbit-door-note {
+    font-size: 0.82rem;
+    color: var(--dark-blue);
+    opacity: 0.8;
+    margin-bottom: 1.1rem;
+}
+.rabbit-door-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+}
+.rabbit-door-actions button {
+    border-radius: 999px;
+    padding: 0.5rem 1.5rem;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    border: 2px solid var(--dark-blue);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+#rabbit-back {
+    background: transparent;
+    color: var(--dark-blue);
+}
+#rabbit-back:hover { background: var(--dark-blue); color: var(--white); }
+#rabbit-give {
+    background: var(--dark-blue);
+    color: var(--white);
+}
+#rabbit-give:hover:not(:disabled) { background: #143a52; }
+#rabbit-give:disabled {
+    background: #c9a23a;
+    color: var(--white);
+    cursor: not-allowed;
+    opacity: 0.85;
 }
 
 .blog-grid {

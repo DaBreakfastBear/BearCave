@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Cave · Rabbit Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="nursery-body">
+    <a href="home.html" class="corner-logo" aria-label="Home">
+        <span class="corner-logo__circle">
+            <img src="Claire Chen Me Ink.png" alt="Claire Chen Me Ink">
+        </span>
+        <span class="corner-logo__dot"></span>
+    </a>
+
+    <!-- User coin balance, fixed up top (website-wide, persisted) -->
+    <div class="coins-bar">
+        <span class="coins-coin" aria-hidden="true"></span>
+        <span class="coins-label">coins:</span>
+        <span id="coin-balance" class="coins-amount">0</span>
+    </div>
+
+    <header class="site-header nursery-header">
+        <h1 class="title">RABBIT HUB</h1>
+        <p class="nursery-welcome">you gave 100 carrots to the rabbit. welcome inside!</p>
+        <p class="back-link"><a href="library.html">← back to the library</a></p>
+    </header>
+
+    <script src="storage.js"></script>
+    <script src="seeds.js"></script>
+    <script src="achievements.js"></script>
+    <script src="trail.js"></script>
+    <script>
+        renderCoinBalance();
+    </script>
+</body>
+</html>

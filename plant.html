@@ -55,6 +55,21 @@
             </figure>
         </div>
 
+        <!-- plot grid + gardener pod (gardener sits to the side) -->
+        <div class="nursery-field">
+        <aside class="gardener-aside" id="gardener-aside">
+            <button type="button" id="hire-gardener-btn" class="hire-gardener-btn">hire gardener</button>
+            <div class="gardener-pod" id="gardener-pod" hidden>
+                <button type="button" class="plot gardener-plot" id="gardener-plot" aria-label="Gardener pot">
+                    <img src="emptypot.png" alt="Gardener pot">
+                    <span class="plot-overlay"></span>
+                </button>
+                <div class="gardener-shed">
+                    <span class="gardener-shed__label">shed</span>
+                    <div class="gardener-shed__seeds" id="gardener-shed-seeds"></div>
+                </div>
+            </div>
+        </aside>
         <!-- 2x4 grid of plantable plots -->
         <div class="nursery-grid" id="plot-grid">
             <button type="button" class="plot" data-index="0"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
@@ -63,6 +78,7 @@
             <button type="button" class="plot" data-index="3"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
             <button type="button" class="plot" data-index="4"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
             <button type="button" class="plot" data-index="5"><img src="emptypot.png" alt="Empty plot"><span class="plot-overlay"></span></button>
+        </div>
         </div>
     </header>
 
@@ -194,16 +210,20 @@
             return w > 0 && w < 0.5;
         }
 
-        // random stock rolls per seed type
-        const rolls = {
-            potato:      () => 7,                     // potato is always 7 in stock
-            carrot:      () => Math.floor(Math.random() * 3) + 2,
-            radish:      () => Math.floor(Math.random() * 3) + 1,
-            cabbage:     () => Math.floor(Math.random() * 2) + 1,
-            cauliflower: () => Math.floor(Math.random() * 2),
-            onion:       () => Math.floor(Math.random() * 2),   // 0–1 (rare)
-            tomato:      () => Math.floor(Math.random() * 2)    // 0–1 (rarest)
-        };
+        // random stock rolls per seed type — driven by each seed's `avail`
+        // range in seeds.js. Format: [min, max] (inclusive) or a fixed
+        // number. Seeds with no `avail` default to always 7 in stock.
+        const rolls = {};
+        SEED_KEYS.forEach(key => {
+            const a = SEEDS[key].avail;
+            if (Array.isArray(a)) {
+                rolls[key] = () => Math.floor(Math.random() * (a[1] - a[0] + 1)) + a[0];
+            } else if (typeof a === 'number') {
+                rolls[key] = () => a;
+            } else {
+                rolls[key] = () => 7; // fallback (e.g. potato)
+            }
+        });
 
         // ===== Persisted coins =====
         let coins = getCoins();
@@ -977,8 +997,9 @@
                     if (s.kind === 'crop') {
                         slot.addEventListener('click', () => openInvDest(s.type));
                     } else {
-                        slot.classList.add('inv-slot--seed');   // seeds: display only
-                        slot.title = 'plant this from a pot';
+                        slot.classList.add('inv-slot--seed');   // seeds: clickable to give to gardener
+                        slot.title = 'plant from a pot · click to give to the gardener';
+                        slot.addEventListener('click', () => openInvSeedDest(s.type));
                     }
                 } else {
                     slot.classList.add('inv-slot--empty');
@@ -1007,6 +1028,27 @@
             `;
             invDetail.querySelector('.inv-dest__btn--market').addEventListener('click', () => openInvQty('market'));
             invDetail.querySelector('.inv-dest__btn--kitchen').addEventListener('click', () => openInvQty('kitchen'));
+        }
+
+        // Stage 2 (seeds) — give a seed packet to the gardener's shed.
+        function openInvSeedDest(type) {
+            invSelType = type;
+            invStage = 'seeddest';
+            invGrid.hidden = true;
+            invDetail.hidden = false;
+            invBack.hidden = false;
+            invTitle.textContent = seedLabels[type] + ' ×' + inventory[type];
+            invDetail.innerHTML = `
+                <img class="inv-detail__img" src="${seedImgs[type]}" alt="${seedLabels[type]}">
+                <p class="inv-detail__info">you have <b>${inventory[type]}</b> ${seedLabels[type]}. <br>plant them from a pot, or hand them to the gardener:</p>
+                <div class="inv-dest">
+                    <button type="button" class="inv-dest__btn inv-dest__btn--gardener">🧑&nbsp;🌾 give to gardener<br><small>auto-grows at 3× time · shed max 20</small></button>
+                </div>
+            `;
+            invDetail.querySelector('.inv-dest__btn--gardener').addEventListener('click', () => {
+                giveToGardener(type);
+                backInvToGrid();
+            });
         }
 
         // Stage 3 — choose how many to send.
@@ -1128,6 +1170,161 @@
             toggleInvPopup();
         });
 
+        // ====================================================================
+        //  GARDENER  — hired via the “hire gardener” button next to the plot
+        //  grid. You hand seed packets from your inventory to the gardener’s
+        //  shed (one seed type at a time, max 20). The gardener then grows
+        //  them for you automatically at 3× the normal grow time, harvesting
+        //  each finished crop straight into your harvested inventory.
+        // ====================================================================
+        const GARD_KEY       = 'bearcave_gardener';
+        const GARD_SHED_MAX  = 20;
+        const GARD_TIME_MULT = 3;
+        const GARD_HIRE_COST = 10000;   // one-time cost to hire the gardener
+        let gardener = loadJSON(GARD_KEY, {
+            hired: false, shedType: null, shedCount: 0, plantedAt: 0, growMs: 0
+        });
+        const saveGardener = () => saveJSON(GARD_KEY, gardener);
+
+        const gardenerPod        = document.getElementById('gardener-pod');
+        const gardenerPlot       = document.getElementById('gardener-plot');
+        const gardenerPlotImg    = gardenerPlot.querySelector('img');
+        const gardenerOverlay    = gardenerPlot.querySelector('.plot-overlay');
+        const gardenerShedSeeds  = document.getElementById('gardener-shed-seeds');
+        const hireBtn            = document.getElementById('hire-gardener-btn');
+
+        function renderHireBtn() {
+            hireBtn.hidden = false;
+            if (gardener.hired) {
+                hireBtn.disabled = true;
+                hireBtn.textContent = 'gardener hired';
+            } else if (coins < GARD_HIRE_COST) {
+                hireBtn.disabled = true;
+                hireBtn.textContent = 'hire gardener · need ' + coinShort(GARD_HIRE_COST);
+            } else {
+                hireBtn.disabled = false;
+                hireBtn.textContent = 'hire gardener · ' + coinShort(GARD_HIRE_COST) + ' coins';
+            }
+        }
+
+        hireBtn.addEventListener('click', () => {
+            if (gardener.hired) return;
+            if (coins < GARD_HIRE_COST) { flashInvToast('need ' + coinShort(GARD_HIRE_COST) + ' coins to hire a gardener'); return; }
+            coins -= GARD_HIRE_COST;
+            setCoins(coins);
+            renderCoins();
+            gardener.hired = true;
+            saveGardener();
+            renderHireBtn();
+            updateGardener();
+            refreshAllStates();
+        });
+
+        // Can the finished crop stack into the harvested inventory? It can
+        // always stack onto an existing same-type stack; otherwise it needs a
+        // free slot (12 max).
+        function gardenerCanHarvest(type) {
+            if (harvested[type] && harvested[type] > 0) return true;
+            return invStacks().length < 12;
+        }
+
+        function renderShed() {
+            gardenerShedSeeds.innerHTML = '';
+            if (!gardener.shedType || gardener.shedCount <= 0) {
+                const e = document.createElement('span');
+                e.className = 'gardener-shed__empty';
+                e.textContent = 'empty';
+                gardenerShedSeeds.appendChild(e);
+                return;
+            }
+            const packet = document.createElement('span');
+            packet.className = 'gardener-shed__packet';
+            packet.innerHTML =
+                '<img src="' + seedImgs[gardener.shedType] + '" alt="">' +
+                '<span class="gardener-shed__count">×' + gardener.shedCount + '</span>';
+            gardenerShedSeeds.appendChild(packet);
+        }
+
+        function updateGardener() {
+            gardenerPod.hidden = !gardener.hired;
+            if (!gardener.hired) { renderHireBtn(); return; }
+            renderHireBtn();
+
+            if (!gardener.shedType || gardener.shedCount <= 0) {
+                gardenerPlotImg.src = EMPTY_IMG;
+                gardenerOverlay.textContent = 'no seeds';
+                gardenerPlot.classList.remove('planted', 'grown', 'growing');
+                renderShed();
+                return;
+            }
+
+            const remaining = gardener.growMs - (Date.now() - gardener.plantedAt);
+            if (remaining <= 0) {
+                // Crop is done — harvest it if there’s room.
+                if (gardenerCanHarvest(gardener.shedType)) {
+                    harvested[gardener.shedType] = (harvested[gardener.shedType] || 0) + 1;
+                    addHarvested(gardener.shedType);     // lifetime harvest count
+                    saveHarvested();
+                    gardener.shedCount -= 1;
+                    if (gardener.shedCount > 0) {
+                        gardener.plantedAt = Date.now();
+                        gardener.growMs = growTimes[gardener.shedType] * GARD_TIME_MULT;
+                    } else {
+                        gardener.shedType = null;
+                        gardener.plantedAt = 0;
+                        gardener.growMs = 0;
+                    }
+                    saveGardener();
+                    renderInvPopup();
+                    checkAchievements();
+                    updateGardener();   // re-render the next crop (or empty state)
+                    return;
+                }
+                // Inventory full (new type, no free slot) — hold the crop grown.
+                gardenerPlotImg.src = stageImage(gardener.shedType, 0, gardener.growMs);
+                gardenerOverlay.textContent = 'inv full!';
+                gardenerPlot.classList.add('planted', 'grown');
+                gardenerPlot.classList.remove('growing');
+                renderShed();
+                return;
+            }
+
+            gardenerPlotImg.src = stageImage(gardener.shedType, remaining, gardener.growMs);
+            gardenerOverlay.textContent = fmtClock(remaining);
+            gardenerPlot.classList.add('planted', 'growing');
+            gardenerPlot.classList.remove('grown');
+            renderShed();
+        }
+
+        // Move a seed packet from the inventory into the gardener’s shed.
+        // The shed holds one seed type at a time (max 20); extra seeds stay
+        // in the inventory.
+        function giveToGardener(type) {
+            if (!gardener.hired) { flashInvToast('hire a gardener first!'); return; }
+            if (!inventory[type] || inventory[type] <= 0) return;
+            if (gardener.shedType && gardener.shedType !== type) {
+                flashInvToast('the shed already has ' + SEEDS[gardener.shedType].name + ' seeds');
+                return;
+            }
+            const space = GARD_SHED_MAX - (gardener.shedCount || 0);
+            if (space <= 0) { flashInvToast('the shed is full (max ' + GARD_SHED_MAX + ')'); return; }
+            const move = Math.min(inventory[type], space);
+            inventory[type] -= move;
+            if (inventory[type] <= 0) delete inventory[type];
+            saveInventory();
+            gardener.shedType = type;
+            gardener.shedCount = (gardener.shedCount || 0) + move;
+            // If the gardener isn’t already growing something, start now.
+            if (!gardener.plantedAt || !gardener.growMs) {
+                gardener.plantedAt = Date.now();
+                gardener.growMs = growTimes[type] * GARD_TIME_MULT;
+            }
+            saveGardener();
+            flashInvToast('gave ' + move + ' ' + SEEDS[type].name + ' seed' + (move === 1 ? '' : 's') + ' to the gardener');
+            renderInvPopup();
+            updateGardener();
+        }
+
         // ===== Refresh all buy-button states =====
         function refreshAllStates() {
             document.querySelectorAll('#shop-grid .shop-card').forEach(updateCardState);
@@ -1135,6 +1332,7 @@
             updatePestBuyState();
             updateFertBuyState();
             renderInvPopup();
+            updateGardener();
             checkAchievements();   // wealth / stockpile / hydrated / prepared / market / fert-use
         }
 
@@ -1145,6 +1343,7 @@
         renderFertilizer();
         renderInvPopup();
         plotGrid.querySelectorAll('.plot').forEach(updatePlot);  // restore plots
+        updateGardener();                                         // restore gardener
         refreshAllStates();
 
         // Restore ant visuals for plots that already had ants (or kill if too long).
@@ -1181,9 +1380,10 @@
         pickerBack.addEventListener('click', () => { if (activePlot) openPotPicker(activePlot); });
         picker.addEventListener('click', e => { if (e.target === picker) closePicker(); });
 
-        // tick all plots every second
+        // tick all plots every second (and the gardener)
         setInterval(() => {
             plotGrid.querySelectorAll('.plot').forEach(updatePlot);
+            updateGardener();
         }, 1000);
 
         // ===== Shop refresh every 3 minutes =====

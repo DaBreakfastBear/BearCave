@@ -64,8 +64,8 @@
                 const card = document.createElement('article');
                 card.className = 'market-card inv-card--' + type;
                 card.innerHTML = `
-                    <img src="${grownImg(type)}" alt="${cropLabels[type]}">
-                    <h3>${cropLabels[type]}</h3>
+                    <img src="${grownImg(type)}" alt="${SEEDS[type].name}">
+                    <h3>${SEEDS[type].name}</h3>
                     <p class="shop-stock">in the kitchen: <span class="stock-count">${k[type]}</span></p>
                 `;
                 grid.appendChild(card);

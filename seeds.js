@@ -23,7 +23,8 @@ const SEEDS = {
         sell: 10,
         type: 'normal',
         growSec: 7,
-        water: 0.2
+        water: 0.2,
+        avail: [18, 18]
     },
     radish: {
         name: 'radish',
@@ -33,7 +34,8 @@ const SEEDS = {
         sell: 55,
         type: 'normal',
         growSec: 13,
-        water: 0.2
+        water: 0.2,
+        avail: [5, 7]
     },
     cabbage: {
         name: 'cabbage',
@@ -43,7 +45,8 @@ const SEEDS = {
         sell: 140,
         type: 'normal',
         growSec: 17,
-        water: 0.2
+        water: 0.2,
+        avail: [5, 7]
     },
     cauliflower: {
         name: 'cauliflower',
@@ -53,7 +56,8 @@ const SEEDS = {
         sell: 350,
         type: 'normal',
         growSec: 22,
-        water: 0.3
+        water: 0.3,
+        avail: [5, 7]
     },
     onion: {
         name: 'onion',
@@ -63,7 +67,8 @@ const SEEDS = {
         sell: 900,
         type: 'normal',
         growSec: 22,
-        water: 0.3
+        water: 0.3,
+        avail: [2, 5]
     },
     tomato: {
         name: 'tomato',
@@ -73,7 +78,85 @@ const SEEDS = {
         sell: 1650,
         type: 'normal',
         growSec: 30,
-        water: 0.5
+        water: 0.5,
+        avail: [2, 5]
+    },
+    greenbean: {
+        name: 'green bean',
+        color: 'green',
+        img: 'seeds green.png',
+        cost: 9000,
+        sell: 10067,
+        type: 'normal',
+        growSec: 32,
+        water: 0.5,
+        avail: [2, 5]
+    },
+    garlic: {
+        name: 'garlic',
+        color: 'white',
+        img: 'seeds white.png',
+        cost: 5250,
+        sell: 6500,
+        type: 'normal',
+        growSec: 35,
+        water: 0.3,
+        avail: [2, 5]
+    },
+    cucumber: {
+        name: 'cucumber',
+        color: 'green',
+        img: 'seeds green.png',
+        cost: 12000,
+        sell: 13700,
+        type: 'normal',
+        growSec: 38,
+        water: 0.5,
+        avail: [2, 5]
+    },
+    corn: {
+        name: 'corn',
+        color: 'yellow',
+        img: 'seeds yellow.png',
+        cost: 1000,
+        sell: 900,
+        type: 'normal',
+        growSec: 42,
+        water: 0.5,
+        avail: [7, 7]
+    },
+    sugarbeet: {
+        name: 'sugar beet',
+        color: 'white',
+        img: 'seeds white.png',
+        cost: 2000,
+        sell: 1900,
+        type: 'normal',
+        growSec: 45,
+        water: 0.4,
+        avail: [7, 7]
+    },
+    sunflower: {
+        name: 'sunflower',
+        color: 'yellow',
+        img: 'seeds yellow.png',
+        cost: 2000,
+        sell: 2500,
+        type: 'normal',
+        growSec: 50,
+        water: 0.5,
+        avail: [1, 3]
+    },
+    shiitake: {
+        name: 'shiitake mushroom',
+        color: 'white',
+        img: 'seeds white.png',
+        cost: 1850,
+        sell: 2000,
+        type: 'normal',
+        growSec: 55,
+        water: 0.4,
+        avail: [1, 3]
     }
 };
 const SEED_KEYS = Object.keys(SEEDS);
@@ -113,7 +196,9 @@ const CROP_IMGS  = {
     potato:  { planted: 'potatopot.png',  grown: 'potatos.png',  diseased: 'diseased potato.png' },
     carrot:  { planted: 'carrotpot.png',   grown: 'carrot.png',   diseased: 'diseased carrot.png' },
     cabbage: { planted: 'cabbageplant.png', grown: 'cabbage.png', diseased: 'diseasedcabbage.png' },
-    radish:  { planted: 'radishplant.png',  grown: 'radish.png',   diseased: 'diseasedradish.png' }
+    radish:  { planted: 'radishplant.png',  grown: 'radish.png',   diseased: 'diseasedradish.png' },
+    tomato:  { grown: 'tomato.png' },
+    onion:   { planted: 'onion.png', grown: 'Screenshot 2026-08-24 at 5.38.34 PM.png', diseased: 'diseased onion.png' }
 };
 const plantedImg  = t => { const c = CROP_IMGS[t]; return c && c.planted  ? c.planted  : SPROUT_IMG; };
 const grownImg    = t => { const c = CROP_IMGS[t]; return c && c.grown    ? c.grown    : GROWN_IMG;   };

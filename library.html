@@ -28,7 +28,10 @@
         <h1 class="title">LIBRARY</h1>
         <p class="nursery-welcome">books, guides &amp; notes from the cave.</p>
 
-        <img class="library-hero" src="bookshelves.png" alt="Bookshelves">
+        <div class="library-hero-wrap">
+            <img class="library-hero" src="bookshelves.png" alt="Bookshelves">
+            <img class="library-hero-corner" src="door.png" alt="" aria-hidden="true">
+        </div>
 
         <div class="blog-grid" id="blog-grid">
             <!-- The Book of Knowledge — Book 1 — costs 10 coins to unlock -->
@@ -75,6 +78,20 @@
     <script src="seeds.js"></script>
     <script src="achievements.js"></script>
     <script src="trail.js"></script>
+
+    <!-- Rabbit door popup: shown when you've grown 100 carrots. Give 100
+         carrots from your harvested inventory to enter the rabbit hub. -->
+    <div class="rabbit-door-modal" id="rabbit-door-modal" hidden>
+        <div class="rabbit-door-card">
+            <h3>PLEASE GIVE 100 CARROTS</h3>
+            <p class="rabbit-door-note" id="rabbit-door-note">you have 0 carrots.</p>
+            <div class="rabbit-door-actions">
+                <button type="button" id="rabbit-back">back</button>
+                <button type="button" id="rabbit-give" disabled>give</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         renderCoinBalance();
         // If the Book of Knowledge is already unlocked, mark its tag.
@@ -83,6 +100,60 @@
             tag.textContent = 'unlocked';
             tag.classList.add('blog-card__tag--owned');
         }
+
+        // ===== Rabbit door (tiny door on the bookshelf corner) =====
+        // Tap it: if you've never grown 100 carrots, "knock knock" floats up
+        // and you can't enter. If you HAVE grown 100, a popup asks you to
+        // give 100 carrots from your harvested inventory to enter the hub.
+        const RABBIT_COST = 100;
+        const HARV_KEY    = 'bearcave_harvested';   // current harvested crops
+        const harvestedNow = () => loadJSON(HARV_KEY, {});
+        const carrotCount  = () => harvestedNow().carrot || 0;
+
+        const door      = document.querySelector('.library-hero-corner');
+        const heroWrap  = document.querySelector('.library-hero-wrap');
+        const modal     = document.getElementById('rabbit-door-modal');
+        const note      = document.getElementById('rabbit-door-note');
+        const giveBtn   = document.getElementById('rabbit-give');
+        const backBtn   = document.getElementById('rabbit-back');
+
+        function showKnockKnock() {
+            if (!heroWrap) return;
+            const k = document.createElement('span');
+            k.className = 'knock-knock';
+            k.textContent = 'knock knock';
+            heroWrap.appendChild(k);
+            // remove the node once the float-out animation finishes
+            setTimeout(() => { if (k.parentNode) k.remove(); }, 1900);
+        }
+
+        function openRabbitModal() {
+            const have = carrotCount();
+            note.textContent = 'you have ' + have + ' carrot' + (have === 1 ? '' : 's') + '.';
+            giveBtn.disabled = have < RABBIT_COST;
+            modal.hidden = false;
+        }
+        function closeRabbitModal() { modal.hidden = true; }
+
+        door.addEventListener('click', () => {
+            if (harvestedCount('carrot') >= RABBIT_COST) {
+                openRabbitModal();      // grown 100 carrots - offer to enter
+            } else {
+                showKnockKnock();       // not yet - knock knock
+            }
+        });
+
+        backBtn.addEventListener('click', closeRabbitModal);
+        modal.addEventListener('click', e => { if (e.target === modal) closeRabbitModal(); });
+
+        giveBtn.addEventListener('click', () => {
+            if (giveBtn.disabled) return;
+            const h = harvestedNow();
+            h.carrot = (h.carrot || 0) - RABBIT_COST;
+            if (h.carrot <= 0) delete h.carrot;
+            saveJSON(HARV_KEY, h);      // give the carrots away
+            window.location.href = 'rabbit-hub.html';
+        });
     </script>
 </body>
 </html>
